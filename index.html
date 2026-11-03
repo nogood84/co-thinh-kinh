@@ -243,6 +243,8 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 .seat-ctl{display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; align-items:center}
 .seat .seat-ctl select{width:auto}
 .badge.off{border-color:#b04a4a; color:#ffb0a0}
+.steps{margin:10px 0 12px; padding-left:22px; display:grid; gap:8px}
+.steps li{padding-left:4px}
 .warn{margin:10px 0; padding:10px 12px; border-radius:9px; background:rgba(209,67,47,.14); border:1px solid rgba(209,67,47,.45); color:#ffd2c4; font-size:13px}
 @media (max-width:520px){ #lobby .seat{grid-template-columns:auto minmax(0,1fr)} #lobby .seat-ctl{grid-column:1/-1; justify-content:flex-start} }
 /* hiệu ứng */
@@ -319,7 +321,7 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
       <button class="btn" data-act="gallery"><span class="ic" aria-hidden="true">棋</span>Quân cờ 3D</button>
       <button class="btn" data-act="music" aria-pressed="true"><span class="ic" aria-hidden="true">樂</span>Nhạc: Bật</button>
       <button class="btn" data-act="sound" aria-pressed="true"><span class="ic" aria-hidden="true">音</span>Âm thanh: Bật</button>
-      <button class="btn" data-act="install" id="installBtn" hidden>Cài lên điện thoại</button>
+      <button class="btn" data-act="install" id="installBtn" hidden><span class="ic" aria-hidden="true">新</span>Cài lên điện thoại</button>
       <button class="btn primary" data-act="setup"><span class="ic" aria-hidden="true">新</span>Ván mới</button>
     </div>
   </header>
@@ -2350,10 +2352,30 @@ async function netAction(a,b){
 }
 document.addEventListener("change",e=>{const s=e.target.closest("[data-seatsel]");if(s&&NET.mode==="host")R("seats/"+s.dataset.seatsel).set({kind:s.value});if(e.target.id==="netWin"&&NET.mode==="host")R("meta").update({win:+e.target.value})});
 
-/* cài app (Android/Chrome) */
+/* cài app: dùng hộp cài của trình duyệt khi có, nếu không thì hướng dẫn theo từng loại máy */
 let installEvt=null;
-addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;const b=$("#installBtn");if(b)b.hidden=false});
-async function doInstall(){if(!installEvt)return;installEvt.prompt();try{await installEvt.userChoice}catch(e){}installEvt=null;const b=$("#installBtn");if(b)b.hidden=true}
+const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone===true;
+function installBtnInit(){const b=$("#installBtn");if(!b)return;b.hidden=isStandalone()||location.protocol==="file:"||!document.querySelector('link[rel="manifest"]')}
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;installBtnInit()});
+addEventListener("appinstalled",()=>{installEvt=null;const b=$("#installBtn");if(b)b.hidden=true;toast("Đã cài Cờ Thỉnh Kinh lên máy.")});
+function installGuide(){
+  const ua=navigator.userAgent,ios=/iPhone|iPad|iPod/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1),
+    android=/Android/i.test(ua),samsung=/SamsungBrowser/i.test(ua),iosOther=ios&&/CriOS|FxiOS|EdgiOS/i.test(ua),edge=/Edg\//.test(ua);
+  let who,steps;
+  if(INAPP){who="Bạn đang mở game bên trong một ứng dụng (Zalo, Messenger, Facebook…)";steps=[`Bấm nút <b>⋯</b> hoặc <b>⋮</b> ở góc màn hình.`,`Chọn <b>Mở bằng trình duyệt</b> (hoặc <b>Mở trong Chrome/Safari</b>).`,`Trong trình duyệt vừa mở, bấm lại nút <b>Cài lên điện thoại</b> của game.`]}
+  else if(ios&&!iosOther){who="iPhone / iPad · Safari";steps=[`Bấm nút <b>Chia sẻ</b> (ô vuông có mũi tên lên) ở thanh dưới cùng, hoặc trên cùng nếu dùng iPad.`,`Kéo xuống, chọn <b>Thêm vào MH chính</b>.`,`Bấm <b>Thêm</b>. Biểu tượng chữ 經 xuất hiện ở màn hình chính.`]}
+  else if(iosOther){who="iPhone / iPad · Chrome hoặc trình duyệt khác";steps=[`Bấm nút <b>Chia sẻ</b> ở thanh địa chỉ.`,`Chọn <b>Thêm vào MH chính</b>. Nếu không thấy, mở link bằng <b>Safari</b> rồi làm lại.`,`Bấm <b>Thêm</b>.`]}
+  else if(samsung){who="Android · Samsung Internet";steps=[`Bấm nút <b>≡</b> ở thanh dưới cùng.`,`Chọn <b>Thêm trang vào</b> → <b>Màn hình chờ</b>.`,`Bấm <b>Thêm</b>.`]}
+  else if(android){who="Android · Chrome";steps=[`Bấm nút <b>⋮</b> ở góc trên bên phải.`,`Chọn <b>Cài đặt ứng dụng</b> hoặc <b>Thêm vào màn hình chính</b>.`,`Bấm <b>Cài đặt</b>. Nếu chưa thấy mục này, chơi thử vài giây rồi mở lại menu.`]}
+  else{who=edge?"Máy tính · Edge":"Máy tính · Chrome";steps=[`Bấm biểu tượng <b>cài đặt</b> (màn hình có mũi tên xuống) ở cuối thanh địa chỉ.`,`Hoặc mở menu <b>⋮</b> → <b>Truyền, lưu và chia sẻ</b> → <b>Cài đặt trang dưới dạng ứng dụng</b>.`,`Bấm <b>Cài đặt</b>.`]}
+  openSheet(`<h2>Cài lên điện thoại</h2><p class="note">${who}</p><ol class="steps">${steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+    <p class="note">Sau khi cài, mở game từ biểu tượng ấn đỏ chữ 經 để chạy toàn màn hình. Game mở được cả khi không có mạng, trừ chế độ online.</p>
+    <div class="opts"><button class="btn primary" data-act="close">Đã hiểu</button></div>`);
+}
+async function doInstall(){
+  if(installEvt){const e=installEvt;installEvt=null;e.prompt();try{const r=await e.userChoice;if(r&&r.outcome==="accepted")return}catch(err){}return}
+  installGuide();
+}
 knFlash=idx=>{netFx("kn",[idx]);return NET.raw.kn(idx)};
 function openWinSheet(){
   if(!G||G.winner==null)return;const pl=P(G.winner),F=FAC[pl.fac];
@@ -2370,7 +2392,7 @@ V3.ok=init3D();
 let pref3d="3d";try{pref3d=localStorage.getItem(SAVE_KEY+"-view")||"3d"}catch(e){}
 setView(V3.ok&&pref3d!=="2d");
 requestAnimationFrame(loop3D);
-soundLabel();camLabel();
+soundLabel();camLabel();installBtnInit();
 render();
 {let saved=null;try{saved=KV().getItem("ctk-room")}catch(e){}
  const want=(qs.get("room")||"").toUpperCase();
