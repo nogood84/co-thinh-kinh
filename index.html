@@ -243,6 +243,7 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 .seat-ctl{display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; align-items:center}
 .seat .seat-ctl select{width:auto}
 .badge.off{border-color:#b04a4a; color:#ffb0a0}
+.warn{margin:10px 0; padding:10px 12px; border-radius:9px; background:rgba(209,67,47,.14); border:1px solid rgba(209,67,47,.45); color:#ffd2c4; font-size:13px}
 @media (max-width:520px){ #lobby .seat{grid-template-columns:auto minmax(0,1fr)} #lobby .seat-ctl{grid-column:1/-1; justify-content:flex-start} }
 /* hiệu ứng */
 .tok.fly{transition:transform .75s cubic-bezier(.3,.6,.3,1)}
@@ -2101,12 +2102,24 @@ async function netCreate(name){
   await R("seats").set({0:{kind:"human",uid:NET.uid,name},1:{kind:"open"},2:{kind:"open"},3:{kind:"bot"}});
   await netEnter(name);
 }
-async function netJoin(code,name){
-  await netInit();code=code.trim().toUpperCase();
+async function netJoin(code,name,step){
+  step=step||(()=>{});
+  step("Đang đăng nhập…");await netInit();code=code.trim().toUpperCase();
+  step("Đang tìm phòng "+code+"…");
   const s=await NET.be.db.ref("rooms/"+code+"/meta").once("value");
-  if(!s.exists()||s.val().status==="closed")throw new Error("Không tìm thấy phòng "+code+".");
-  NET.code=code;await netEnter(name);
+  if(!s.exists()||s.val().status==="closed")throw new Error("Không tìm thấy phòng "+code+". Kiểm tra lại mã, hoặc phòng đã đóng.");
+  step("Đang tải phòng…");NET.code=code;await netEnter(name);
 }
+/* sau khi vào phòng: đóng màn hình chọn nếu ván đã bắt đầu, báo rõ đang chơi hay đang xem */
+async function netAfterJoin(){
+  for(let i=0;i<30&&NET.status==null;i++)await sleep(100);
+  if($("#lobby"))return;
+  if(NET.status==="lobby"){netLobby();return}
+  for(let i=0;i<30&&!G;i++)await sleep(100);
+  closeSheet();
+  toast(mySeat()>=0?"Đã vào lại ván đang chơi.":"Ván đang diễn ra nên bạn vào xem. Chờ chủ phòng mở ván mới để ngồi vào.");
+}
+const INAPP=/Zalo|FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|TikTok|musical_ly/i.test(navigator.userAgent);
 async function netEnter(name){
   try{KV().setItem("ctk-room",NET.code)}catch(e){}
   NET.name=name;NET.status=null;NET.overShown=false;NET.choiceShown=-1;
@@ -2302,7 +2315,7 @@ function onlinePaneHTML(){
   if(!netReady())return `<p class="empty">Chế độ online chưa bật. Người quản lý game cần dán cấu hình Firebase vào file <b>firebase-config.js</b> (xem HUONG-DAN.md). Vẫn chơi được trên một máy ở tab bên cạnh.</p>`;
   if(NET.code)return `<p>Bạn đang ở phòng <b class="code-inline">${NET.code}</b>${NET.mode==="host"?" (chủ phòng)":""}.</p>
     <div class="opts"><button class="btn primary" data-act="netLobby">Mở phòng chờ</button><button class="btn" data-act="netLeave">${NET.mode==="host"?"Đóng phòng":"Rời phòng"}</button></div>`;
-  return `<div class="row"><label for="netName">Tên của bạn</label><input id="netName" maxlength="20" value="${esc(myName())}" placeholder="Ví dụ: Dũng"></div>
+  return `${INAPP?`<p class="warn">Bạn đang mở game bên trong một ứng dụng (Zalo, Messenger…). Nếu bị kẹt, bấm nút <b>⋯</b> ở góc màn hình rồi chọn <b>Mở bằng trình duyệt</b>.</p>`:""}<div class="row"><label for="netName">Tên của bạn</label><input id="netName" maxlength="20" value="${esc(myName())}" placeholder="Ví dụ: Dũng"></div>
     <div class="opts"><button class="btn primary" data-act="netCreate"><span class="ic" aria-hidden="true">新</span>Tạo phòng mới</button></div>
     <h4>Vào phòng của bạn bè</h4>
     <div class="row"><input id="netCode" maxlength="5" placeholder="Mã phòng, ví dụ K7M2Q" value="${esc(pre)}" autocapitalize="characters" aria-label="Mã phòng"><button class="btn primary" data-act="netJoin">Vào phòng</button></div>
@@ -2319,8 +2332,11 @@ function netErr(e){const c=(e&&(e.code||e.message))||"";
 async function netAction(a,b){
   const msg=t=>{const m=$("#netMsg");if(m)m.textContent=t};
   try{
-    if(a==="netCreate"){const n=netNameInput();if(!n)return;msg("Đang tạo phòng…");if(NET.code)await netLeave(true);await withTimeout(netCreate(n),15000)}
-    else if(a==="netJoin"){const n=netNameInput();if(!n)return;const c=($("#netCode").value||"").trim();if(c.length<5){msg("Mã phòng có 5 ký tự.");return}msg("Đang vào phòng…");if(NET.code)await netLeave(true);await withTimeout(netJoin(c,n),15000)}
+    if(a==="netCreate"){const n=netNameInput();if(!n)return;msg("Đang tạo phòng…");if(NET.code)await netLeave(true);await withTimeout(netCreate(n),20000);await netAfterJoin()}
+    else if(a==="netJoin"){const n=netNameInput();if(!n)return;const c=($("#netCode").value||"").trim();if(c.length<5){msg("Mã phòng có 5 ký tự.");return}
+      if(NET.code)await netLeave(true);let last="Đang vào phòng…";msg(last);
+      try{await withTimeout(netJoin(c,n,t=>{last=t;msg(t)}),20000)}catch(e){if(e.message==="timeout")throw new Error("Bị kẹt ở bước: "+last.replace("…","")+". Kiểm tra mạng"+(INAPP?", hoặc mở link bằng Chrome/Safari thay vì trong Zalo/Messenger":"")+" rồi thử lại.");throw e}
+      await netAfterJoin()}
     else if(a==="netLobby")netLobby();
     else if(a==="netLeave"){await netLeave();closeSheet();openSetup("online")}
     else if(a==="netSit")await netSit(+b.dataset.i);
@@ -2358,7 +2374,7 @@ soundLabel();camLabel();
 render();
 {let saved=null;try{saved=KV().getItem("ctk-room")}catch(e){}
  const want=(qs.get("room")||"").toUpperCase();
- if(netReady()&&saved&&myName()&&(!want||want===saved))netJoin(saved,myName()).catch(()=>{try{KV().removeItem("ctk-room")}catch(e){}openSetup(want?"online":"local")});
+ if(netReady()&&saved&&myName()&&(!want||want===saved))netJoin(saved,myName()).then(netAfterJoin).catch(()=>{try{KV().removeItem("ctk-room")}catch(e){}openSetup(want?"online":"local")});
  else if(want&&netReady())openSetup("online");
  else openSetup();}
 </script>
