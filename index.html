@@ -226,6 +226,53 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 .cx span{font-size:12px; color:var(--muted)}
 .cx em{font-style:normal; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:color-mix(in srgb, var(--cc) 70%, white)}
 .toast{position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--lac3); border:1px solid var(--gold); padding:10px 16px; border-radius:10px; z-index:60; max-width:calc(100% - 32px)}
+/* điện thoại */
+.mmenu{display:none}
+#mbar{display:none}
+@media (max-width:760px){
+  .app{gap:12px; padding-block:10px calc(108px + env(safe-area-inset-bottom,0px))}
+  .top{padding-bottom:12px; gap:8px; align-items:center; flex-wrap:nowrap}
+  .brand{gap:10px}
+  .seal{width:38px; height:38px; font-size:22px}
+  h1{font-size:22px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .brand{min-width:0; flex:1}
+  .brand>div:last-child{min-width:0}
+  .top-actions .btn.primary .ic{display:none}
+  .tag{display:none}
+  .top-actions{flex-wrap:nowrap; flex:none}
+  .top-actions .btn:not(.mmenu):not(.primary){display:none}
+  .top-actions .btn{padding:9px 12px}
+  .mmenu{display:inline-flex}
+  .legend .viewbtn{display:none}
+  .legend{margin-top:8px; font-size:11.5px}
+  #turn,#hand{display:none}
+  .board-wrap{max-width:min(100%, calc(100dvh - 210px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px)))}
+  #mbar{--fc:#d6ab52; display:flex; align-items:center; gap:10px; position:fixed; left:0; right:0; bottom:0; z-index:30;
+    padding:8px max(12px, env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px, env(safe-area-inset-left,0px));
+    background:linear-gradient(180deg,rgba(30,22,38,.94),#15101b 70%); border-top:2px solid color-mix(in srgb,var(--fc) 70%,transparent);
+    box-shadow:0 -10px 30px rgba(0,0,0,.5),0 -1px 18px color-mix(in srgb,var(--fc) 25%,transparent); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px)}
+  .mb-who{display:flex; align-items:center; gap:8px; min-width:0; flex:1}
+  .mb-who .hg{width:36px; height:36px; flex:none; border-radius:8px; display:grid; place-items:center; font-family:var(--f-han); font-size:21px; color:#fff8e8; background:var(--fc); box-shadow:inset 0 0 0 2px rgba(255,240,210,.35)}
+  .mb-txt{min-width:0; display:flex; flex-direction:column; line-height:1.25}
+  .mb-txt b{font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .mb-txt span{font-size:12px; color:#cdbfd2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+  .mb-die{flex:none; border:0; background:none; padding:0; cursor:pointer; border-radius:12px}
+  .mb-die[disabled]{cursor:default}
+  .mb-die .die.big{width:54px; height:54px}
+  .mb-die.go .die{animation:dieBeckon 1.4s ease-in-out infinite; filter:drop-shadow(0 0 8px #f3d791)}
+  @keyframes dieBeckon{0%,100%{transform:rotate(0)}10%{transform:rotate(-10deg) scale(1.06)}20%{transform:rotate(8deg) scale(1.06)}30%{transform:rotate(0)}}
+  .mb-acts{display:flex; gap:6px; flex:none; align-items:center}
+  .mb-acts .btn{padding:11px 12px; font-size:13.5px; min-height:44px}
+  .mb-hand.glow{border-color:var(--gold); box-shadow:0 0 14px rgba(243,215,145,.45)}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  .fxban{top:40%}
+  .menu-grid{grid-template-columns:1fr 1fr}
+  .menu-grid .btn{min-height:46px; padding:10px; font-size:13px}
+  .menu-grid .btn.primary{grid-column:1/-1}
+}
+.menu-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; margin-top:12px}
+.menu-grid .btn{text-align:left}
+@media (prefers-reduced-motion:reduce){ .mb-die.go .die{animation:none} }
 /* chơi online */
 .tabs{display:flex; gap:6px; margin:14px 0 6px; padding:4px; border-radius:10px; background:rgba(0,0,0,.25); border:1px solid rgba(214,171,82,.2)}
 .tab{flex:1; border:0; background:transparent; color:var(--muted); padding:9px 10px; border-radius:7px; cursor:pointer; font-weight:600}
@@ -322,6 +369,7 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
       <button class="btn" data-act="music" aria-pressed="true"><span class="ic" aria-hidden="true">樂</span>Nhạc: Bật</button>
       <button class="btn" data-act="sound" aria-pressed="true"><span class="ic" aria-hidden="true">音</span>Âm thanh: Bật</button>
       <button class="btn" data-act="install" id="installBtn" hidden><span class="ic" aria-hidden="true">新</span>Cài lên điện thoại</button>
+      <button class="btn mmenu" data-act="menu" aria-label="Mở menu">☰ Menu</button>
       <button class="btn primary" data-act="setup"><span class="ic" aria-hidden="true">新</span>Ván mới</button>
     </div>
   </header>
@@ -331,6 +379,7 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
     <div class="legend" id="legend"></div>
   </main>
 
+  <div id="mbar" role="region" aria-label="Điều khiển lượt"></div>
   <aside class="side">
     <section id="turn"></section>
     <section id="hand" class="panel"></section>
@@ -967,7 +1016,7 @@ function renderTurn(){
   if(!G){el.innerHTML=`<div class="panel"><h3>Chưa có ván</h3><p class="empty">${NET.code?"Đang ở phòng "+NET.code+", chờ chủ phòng bắt đầu ván…":"Bấm <b>Ván mới</b> để chọn phe và bắt đầu."}</p></div>`;return}
   const pi=G.cur,pl=P(pi),F=FAC[pl.fac],human=pl.type==="human",mine=localSeat(pi);
   const hostOff=NET.mode==="client"&&NET.meta&&!isOnline(NET.meta.host);
-  let status="",acts="";
+  let status="",acts="",short="";
   if(G.phase==="over"){const W=P(G.winner);status=`<b>${esc(W.name)}</b> đã thắng ván này.`;acts=NET.mode==="host"?`<button class="btn primary" data-act="netAgain">Chơi lại</button>`:NET.mode==="client"?"":`<button class="btn primary" data-act="setup">Ván mới</button>`}
   else if(hostOff){status="Chủ phòng đang mất kết nối. Ván tạm dừng, chờ chủ phòng quay lại…"}
   else if(G.select){if(localSeat(G.select.seat??pi)){status=esc(G.select.prompt)+" (bấm vào quân đang sáng).";acts=`<button class="btn" data-act="cancelSel">Huỷ phép</button>`}else status=`<b>${esc(pl.name)}</b> đang chọn mục tiêu cho phép…`}
@@ -981,26 +1030,64 @@ function renderTurn(){
     else if(G.moves.length)status=`Chọn một quân đang sáng để đi <b>${G.dice}</b> bước.`;
     else{status=`Đổ ${G.dice} nhưng không có nước đi hợp lệ.`;acts=`<button class="btn primary" data-act="pass">Bỏ lượt</button>`}
   }
+  if(mine&&!G.select&&!G.busy&&G.phase==="roll")short="Lượt của bạn · bấm xúc xắc để đổ";
+  else if(mine&&!G.select&&!G.busy&&G.phase==="move"&&G.moves.length)short=`Chạm quân đang sáng để đi <b>${G.dice}</b> bước`;
+  else short=status.replace(" Đổ 1 hoặc 6 để xuất quân và được đổ thêm lượt.","").replace(" (bấm vào quân đang sáng)."," · chạm quân đang sáng");
+  const mob=isMobile(),fresh=G.turnId!==lastTurnShown;
+  renderMBar(F,pl,human,mine,short,acts,mob);
+  if(mob&&fresh&&mine&&G.phase==="roll"){const b=$(".board-wrap");if(b){const r=b.getBoundingClientRect();if(r.bottom<60||r.top>innerHeight*.5)b.scrollIntoView({behavior:REDUCE.matches?"auto":"smooth",block:"start"})}}
   el.innerHTML=`<div class="turn${G.turnId!==lastTurnShown?" fresh":""}" style="--fc:${F.hex}">
     <div class="turn-head"><div class="hg">${F.han}</div><div><div class="turn-name">${esc(pl.name)}</div><div class="turn-sub">${F.world} · ${F.realm}${human?(NET.mode&&mine?" · Bạn":""):" · Máy"}</div></div></div>
-    <div class="turn-body"><div id="die" class="${dieCls()}">${dieSVG(G.dice,"big")}</div><div style="min-width:0"><p class="status">${status}</p><div class="acts">${acts}</div></div></div></div>`;
+    <div class="turn-body"><div id="${isMobile()?"die-side":"die"}" class="${dieCls()}">${dieSVG(G.dice,"big")}</div><div style="min-width:0"><p class="status">${status}</p><div class="acts">${acts}</div></div></div></div>`;
   lastTurnShown=G.turnId;
 }
 function cardHTML(id,attrs=""){
   const C=CARDS[id],F=FAC[C.f];
   return `<button class="pc" style="--cc:${F.hex}" data-han="${F.han}" ${attrs}><span class="kind">${F.card}</span><span class="nm">${C.n}</span><span class="tx">${C.t}</span><span class="when">${WHEN[C.w]}</span></button>`;
 }
-function renderHand(){
-  const el=$("#hand");
-  if(!G){el.innerHTML=`<h3>Bài Phép</h3><p class="empty">Mỗi nhà khởi đầu với 2 lá bài Phép.</p>`;return}
+function handInfo(){
+  if(!G)return {html:`<h3>Bài Phép</h3><p class="empty">Mỗi nhà khởi đầu với 2 lá bài Phép.</p>`,n:0,playable:0};
   const pi=NET.mode?mySeat():G.cur;
-  if(pi<0){el.innerHTML=`<h3>Bài Phép</h3><p class="empty">Bạn đang xem ván này, chưa ngồi vào giới nào.</p>`;return}
+  if(pi<0)return {html:`<h3>Bài Phép</h3><p class="empty">Bạn đang xem ván này, chưa ngồi vào giới nào.</p>`,n:0,playable:0};
   const pl=P(pi);
-  if(!localSeat(pi)){el.innerHTML=`<h3>Bài Phép của ${esc(pl.name)}</h3><p class="empty">Bài của ${pl.type==="bot"?"máy":esc(pl.name)} được giữ kín · ${pl.hand.length} lá.</p>`;return}
-  const turn=pi===G.cur;
-  el.innerHTML=`<h3>${NET.mode?"Bài Phép của bạn":"Bài Phép của "+esc(pl.name)} · ${pl.hand.length}/${HAND_MAX}</h3>
-    ${pl.hand.length?`<div class="hand-grid">${pl.hand.map((id,hi)=>id&&CARDS[id]?cardHTML(id,`data-card="${hi}" ${turn&&canPlay(pi,hi)?"":"disabled"}`):"").join("")}</div>`:`<p class="empty">Chưa có lá nào. Rút thêm ở ô Nhân Duyên hoặc khi đá được quân địch.</p>`}
-    <p class="note">${!turn?"Chỉ dùng được bài trong lượt của bạn.":G.cardUsed?"Đã dùng 1 lá trong lượt này.":"Mỗi lượt được dùng tối đa 1 lá."}</p>`;
+  if(!localSeat(pi))return {html:`<h3>Bài Phép của ${esc(pl.name)}</h3><p class="empty">Bài của ${pl.type==="bot"?"máy":esc(pl.name)} được giữ kín · ${pl.hand.length} lá.</p>`,n:pl.hand.length,playable:0,hidden:true};
+  const turn=pi===G.cur;let playable=0;
+  const cards=pl.hand.map((id,hi)=>{if(!id||!CARDS[id])return "";const ok=turn&&canPlay(pi,hi);if(ok)playable++;return cardHTML(id,`data-card="${hi}" ${ok?"":"disabled"}`)}).join("");
+  return {n:pl.hand.length,playable,html:`<h3>${NET.mode?"Bài Phép của bạn":"Bài Phép của "+esc(pl.name)} · ${pl.hand.length}/${HAND_MAX}</h3>
+    ${pl.hand.length?`<div class="hand-grid">${cards}</div>`:`<p class="empty">Chưa có lá nào. Rút thêm ở ô Nhân Duyên hoặc khi đá được quân địch.</p>`}
+    <p class="note">${!turn?"Chỉ dùng được bài trong lượt của bạn.":G.cardUsed?"Đã dùng 1 lá trong lượt này.":"Mỗi lượt được dùng tối đa 1 lá."}</p>`};
+}
+function renderHand(){
+  const hi=handInfo();$("#hand").innerHTML=hi.html;
+  const hs=$("#handsheet");if(hs)hs.innerHTML=hi.html;
+  const hb=$("#mbar [data-act=hand]");if(hb){hb.innerHTML=`<span class="ic" aria-hidden="true">符</span>Bài${hi.n?` · ${hi.n}`:""}`;hb.classList.toggle("glow",hi.playable>0)}
+}
+/* ---------- giao diện điện thoại ---------- */
+const MOB=matchMedia("(max-width: 760px)");
+const isMobile=()=>MOB.matches;
+MOB.addEventListener?MOB.addEventListener("change",()=>{if(G)render();else{renderTurn()}}):MOB.addListener(()=>G&&render());
+function renderMBar(F,pl,human,mine,short,acts,mob){
+  const m=$("#mbar");if(!m)return;
+  if(!G||!F){m.style.setProperty("--fc","#d6ab52");m.innerHTML=`<div class="mb-who"><div class="mb-txt"><b>Cờ Thỉnh Kinh</b><span>${NET.code?"Đang ở phòng "+NET.code+", chờ chủ phòng bắt đầu…":"Bấm Ván mới để bắt đầu."}</span></div></div><div class="mb-acts"><button class="btn primary" data-act="setup">Ván mới</button></div>`;return}
+  const hi=handInfo(),canRoll=mine&&G.phase==="roll"&&!G.busy&&!G.select;
+  m.style.setProperty("--fc",F.hex);
+  m.innerHTML=`<div class="mb-who"><div class="hg">${F.han}</div><div class="mb-txt"><b>${esc(pl.name)}${human?(NET.mode&&mine?" · bạn":""):" · máy"}</b><span>${short}</span></div></div>
+    <button class="mb-die ${canRoll?"go":""}" data-act="roll" ${canRoll?"":"disabled"} aria-label="${canRoll?"Đổ xúc xắc":"Xúc xắc"}"><span id="${mob?"die":"die-m"}" class="${dieCls()}">${dieSVG(G.dice,"big")}</span></button>
+    <div class="mb-acts">${acts.replace(/data-act="roll"[^>]*>Đổ xúc xắc/,'data-act="roll" '+(G.busy?"disabled":"")+'>Đổ')}${hi.hidden||!hi.n&&!mine?"":`<button class="btn mb-hand${hi.playable?" glow":""}" data-act="hand"><span class="ic" aria-hidden="true">符</span>Bài${hi.n?` · ${hi.n}`:""}</button>`}</div>`;
+}
+function openHandSheet(){openSheet(`<div id="handsheet">${handInfo().html}</div><div class="opts foot"><button class="btn" data-act="close">Đóng</button></div>`)}
+function openMenu(){
+  const vt=V3.ok?`<button class="btn" data-act="view">${V3.on?"Chuyển sang 2D":"Chuyển sang 3D"}</button>`:"";
+  const inst=$("#installBtn")&&!$("#installBtn").hidden?`<button class="btn" data-act="install"><span class="ic" aria-hidden="true">新</span>Cài lên điện thoại</button>`:"";
+  openSheet(`<h2>Menu</h2><div class="menu-grid">
+    <button class="btn primary" data-act="setup"><span class="ic" aria-hidden="true">新</span>Ván mới</button>${inst}
+    <button class="btn" data-act="rules"><span class="ic" aria-hidden="true">律</span>Luật chơi</button>
+    <button class="btn" data-act="codex"><span class="ic" aria-hidden="true">牌</span>Bộ bài 24 lá</button>
+    <button class="btn" data-act="spells"><span class="ic" aria-hidden="true">符</span>Bài Phép</button>
+    <button class="btn" data-act="gallery"><span class="ic" aria-hidden="true">棋</span>Quân cờ 3D</button>
+    <button class="btn" data-act="music">${musicHTML()}</button><button class="btn" data-act="sound">${soundHTML()}</button>
+    <button class="btn" data-act="cam">${camHTML()}</button>${vt}</div>
+    <div class="opts foot"><button class="btn" data-act="close">Đóng</button></div>`);
 }
 function renderPlayers(){
   const el=$("#players");
@@ -1032,6 +1119,7 @@ document.addEventListener("click",e=>{
   const rc=e.target.closest("[data-rchoose]");
   if(rc){netIntent("choose",{i:+rc.dataset.rchoose});closeSheet();return}
   const card=e.target.closest("[data-card]");
+  if(card&&!card.disabled&&card.closest("#sheet"))closeSheet();
   if(card&&!card.disabled){if(NET.mode==="client"){netIntent("card",{hi:+card.dataset.card});G.busy=true;renderHand()}else useCard(G.cur,+card.dataset.card);return}
   const b=e.target.closest("[data-act]");if(!b)return;
   const a=b.dataset.act;
@@ -1044,14 +1132,16 @@ document.addEventListener("click",e=>{
   else if(a==="close")closeSheet();
   else if(a==="sound")toggleSound();
   else if(a==="music")toggleMusic();
-  else if(a==="cam")toggleCam();
+  else if(a==="cam"){toggleCam();document.querySelectorAll("#sheet [data-act=cam]").forEach(x=>x.innerHTML=camHTML())}
+  else if(a==="menu")openMenu();
+  else if(a==="hand")openHandSheet();
   else if(modalRes)return;
   else if(a==="setup")openSetup(NET.code?"online":"local");
   else if(a==="rules")openRules();
   else if(a==="codex")openCodex();
   else if(a==="spells")openSpells();
   else if(a==="gallery")openGallery();
-  else if(a==="view")setView(!V3.on);
+  else if(a==="view"){setView(!V3.on);if(b.closest("#sheet"))closeSheet()}
   else if(a==="start")startFromSetup();
   else if(a==="resume")resumeGame();
 });
