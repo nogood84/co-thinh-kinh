@@ -99,6 +99,11 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 .legend span{display:inline-flex; align-items:center; gap:6px}
 .legend i{font-style:normal; font-family:var(--f-han); width:20px; height:20px; display:grid; place-items:center; border-radius:4px; background:var(--lac3); font-size:13px}
 
+/* tiết kiệm pin: dừng hoạt ảnh trang trí, giữ lại các tín hiệu cần thiết dưới dạng tĩnh */
+body.eco .knglow,body.eco .kglow,body.eco .rays,body.eco .flame,body.eco .halo,body.eco .talis,body.eco .wave,body.eco .cloud,body.eco .twk,body.eco .tcrays,body.eco .pv,body.eco .bdie .ring,body.eco .bdie.can .die,body.eco .mb-die.go .die,body.eco .mh-seals span{animation:none!important}
+body.calm .knglow,body.calm .kglow,body.calm .rays,body.calm .flame,body.calm .halo,body.calm .talis,body.calm .wave,body.calm .cloud,body.calm .twk,body.calm .tcrays,body.calm .bdie .ring,body.calm .bdie.can .die,body.calm .mb-die.go .die,body.calm .bring.on,body.calm .tok.can .tok-ring,body.calm .mh-seals span{animation-play-state:paused!important}
+body.eco .bring.on{animation:none; opacity:1; stroke-width:1.6}
+body.eco .tok.can .tok-ring{animation:none; stroke-width:1.1; opacity:1}
 /* board svg */
 .frame{fill:#1f1828; stroke:#e3b65a; stroke-width:.5}
 .knglow,.kglow,.halo,.flame,.talis{transform-box:fill-box}
@@ -470,6 +475,7 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
       <button class="btn" data-act="gallery"><span class="ic" aria-hidden="true">棋</span>Quân cờ 3D</button>
       <button class="btn" data-act="music" aria-pressed="true"><span class="ic" aria-hidden="true">樂</span>Nhạc: Bật</button>
       <button class="btn" data-act="sound" aria-pressed="true"><span class="ic" aria-hidden="true">音</span>Âm thanh: Bật</button>
+      <button class="btn" data-act="eco" aria-pressed="false"><span class="ic" aria-hidden="true">省</span>Tiết kiệm pin: Tắt</button>
       <button class="btn" data-act="install" id="installBtn" hidden><span class="ic" aria-hidden="true">新</span>Cài lên điện thoại</button>
       <button class="btn mmenu" data-act="menu" aria-label="Mở menu">☰ Menu</button>
       <button class="btn primary" data-act="setup"><span class="ic" aria-hidden="true">新</span>Ván mới</button>
@@ -1475,7 +1481,7 @@ function place(){
   for(let f=0;f<4;f++){const r=document.getElementById("bring"+f);if(r)r.classList.toggle("on",!!G&&G.winner==null&&P(G.cur).fac===f)}
   netDirty();
 }
-function render(){syncDetour();place();renderTurn();renderHand();renderPlayers();renderLog();renderChatPanel()}
+function render(){poke();syncDetour();place();renderTurn();renderHand();renderPlayers();renderLog();renderChatPanel()}
 let lastTurnShown=-1;
 const ROLLTXT=()=>ADV()?" Bấm xúc xắc giữa bàn cờ để đổ hai viên. Có mặt 1 hoặc 6 thì xuất được quân, đổ đôi được thêm lượt, đôi 6 mở Lối đi riêng.":" Bấm xúc xắc giữa bàn cờ để đổ. Đổ 1 hoặc 6 để xuất quân và được đổ thêm lượt.";
 function renderTurn(){
@@ -1570,7 +1576,7 @@ function openMenu(){
     <button class="btn" data-act="spells"><span class="ic" aria-hidden="true">符</span>Bài Phép</button>
     <button class="btn" data-act="gallery"><span class="ic" aria-hidden="true">棋</span>Quân cờ 3D</button>
     <button class="btn" data-act="music">${musicHTML()}</button><button class="btn" data-act="sound">${soundHTML()}</button>
-    <button class="btn" data-act="cam">${camHTML()}</button>${vt}</div>
+    <button class="btn" data-act="cam">${camHTML()}</button><button class="btn" data-act="eco">${ecoHTML()}</button>${vt}</div>
     <div class="opts foot"><button class="btn" data-act="close">Đóng</button></div>`);
 }
 function renderPlayers(){
@@ -1620,6 +1626,7 @@ document.addEventListener("click",e=>{
   else if(a==="install")doInstall();
   else if(a==="close")closeSheet();
   else if(a==="sound")toggleSound();
+  else if(a==="eco")setEco(!ECO.on,true);
   else if(a==="music")toggleMusic();
   else if(a==="cam"){toggleCam();document.querySelectorAll("#sheet [data-act=cam]").forEach(x=>x.innerHTML=camHTML())}
   else if(a==="menu")openMenu();
@@ -2204,8 +2211,7 @@ function init3D(){
   const wrap=$(".board-wrap");
   let r;try{r=new THREE.WebGLRenderer({antialias:true})}catch(e){return false}
   if(!r||!r.getContext())return false;
-  r.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
-  r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;
+  r.shadowMap.enabled=true;
     const cv=r.domElement;cv.id="b3d";cv.hidden=true;cv.setAttribute("aria-label","Bàn cờ 3D, kéo để xoay, cuộn để phóng to");wrap.appendChild(cv);
   const tip=document.createElement("div");tip.className="tip";tip.hidden=true;wrap.appendChild(tip);
   const scene=new THREE.Scene();scene.background=new THREE.Color("#15101b");
@@ -2235,7 +2241,7 @@ function init3D(){
   V3.env=buildEnv(scene);
   {const pv=new THREE.Mesh(new THREE.TorusGeometry(5,.5,8,40),addMat("#f3d791",.9));pv.rotation.x=Math.PI/2;pv.visible=false;scene.add(pv);V3.pv=pv}
   V3.tokRoot=new THREE.Group();scene.add(V3.tokRoot);
-  Object.assign(V3,{r,scene,cam,ctl,cv,tip,wrap,bmat});
+  Object.assign(V3,{r,scene,cam,ctl,cv,tip,wrap,bmat,sun});V3quality();
   new ResizeObserver(()=>{const w=wrap.clientWidth,h=wrap.clientHeight;if(!w||!h)return;r.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();const dist=248*Math.max(1,1.1/cam.aspect);cam.position.copy(ctl.target).addScaledVector(camDir,dist);V3.dirty=true}).observe(wrap);
   const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();let down=null;
   function hit(e){const b=cv.getBoundingClientRect();ndc.set((e.clientX-b.left)/b.width*2-1,-(e.clientY-b.top)/b.height*2+1);ray.setFromCamera(ndc,cam);const h=ray.intersectObjects(V3.tokRoot.children,true).find(x=>x.object.visible);return h&&h.object.userData.tok}
@@ -2365,15 +2371,17 @@ function loop3D(t){
   camTick(dt);
   if(V3.on&&V3.r){
     V3.ctl.update();
-    let busy=false;
+    const eco=ECO.on,still=eco||REDUCE.matches;let busy=false,amb=false;
     if(V3.toks)for(const row of V3.toks)for(const o of row){const u=o.userData,dx=u.tx-o.position.x,dz=u.tz-o.position.z,d=Math.hypot(dx,dz),k=Math.min(1,dt*(u.fly?3.6:15));
       if(d>.02||Math.abs(u.ts-o.scale.x)>.002){busy=true;o.position.x+=dx*k;o.position.z+=dz*k;const ty=u.fly?Math.min(d*.7,30):Math.min(d*.45,5);o.position.y+=(ty-o.position.y)*Math.min(1,dt*(u.fly?7:40));o.scale.setScalar(o.scale.x+(u.ts-o.scale.x)*k);if(u.fly)o.children[0].rotation.y+=dt*13}
       else{if(u.fly){u.fly=false;o.children[0].rotation.y=0;o.position.y=0;busy=true;if(!REDUCE.matches)fx3Points(o.position.x,o.position.z,"#fff4dc",{n:16,spread:12,up:8,life:.5,size:2})}if(o.position.y){o.position.y=0;busy=true}}
       const fig=o.children[0];
-      if(u.can){busy=true;u.ring.material.opacity=.5+.45*Math.sin(t/170);if(!REDUCE.matches)fig.position.y=Math.abs(Math.sin(t/210+u.ti))*1.1}else if(fig.position.y)fig.position.y=0}
+      if(u.can&&!still){busy=true;u.ring.material.opacity=.5+.45*Math.sin(t/170);fig.position.y=Math.abs(Math.sin(t/210+u.ti))*1.1}
+      else{if(u.can&&u.ring.material.opacity!==.9){u.ring.material.opacity=.9;busy=true}if(fig.position.y){fig.position.y=0;busy=true}}}
     if(FX3.list.length){fx3Tick(dt);busy=true}
-    if(V3.env&&!REDUCE.matches&&t-(V3.envT||0)>32){const edt=Math.min(.1,(t-(V3.envT||t))/1000);V3.envT=t;for(const f of V3.env.upd)f(t,edt);busy=true}
-    if(busy||V3.dirty){V3.dirty=false;V3.r.render(V3.scene,V3.cam)}
+    /* cảnh nền (mây, đèn lồng, hạt sáng): 30 hình/giây khi bàn đang động, 15 khi đứng yên; tiết kiệm pin thì đứng yên hẳn */
+    if(V3.env&&!still&&!IDLE.on&&t-(V3.envT||0)>(busy||V3.dirty?32:66)){const edt=Math.min(.12,(t-(V3.envT||t))/1000);V3.envT=t;for(const f of V3.env.upd)f(t,edt);amb=true}
+    if((busy||V3.dirty||amb)&&t-(V3.lastR||0)>=(eco?31:0)){V3.dirty=false;V3.lastR=t;V3.r.render(V3.scene,V3.cam)}
   }
   if(GAL.r)GAL.frame(t);
 }
@@ -2447,7 +2455,7 @@ function actx(){
       const out=c.createGain();out.connect(master);const os=c.createGain();os.gain.value=.55;out.connect(os);os.connect(rv);
       const mb=c.createGain();mb.gain.value=0;mb.connect(master);const ms=c.createGain();ms.gain.value=.9;mb.connect(ms);ms.connect(rv);
       Object.assign(SFX,{ctx:c,out,nb,master});MUS.bus=mb;SFX.pl=makePlucks(c)}catch(e){return null}}
-  if(SFX.ctx.state==="suspended")SFX.ctx.resume().catch(()=>{});
+  SFX.last=performance.now();if(SFX.ctx.state==="suspended"){SFX.idle=false;SFX.ctx.resume().catch(()=>{})}
   if(MUS.on&&!MUS.run&&!document.hidden)musicStart();
   return SFX.ctx;
 }
@@ -2495,7 +2503,11 @@ const SND={
   home(){for(let i=0;i<9;i++)pluck(5+i,{vol:.16,at:i*.035});bell(1175,{vol:.08,at:.35})},
   win(){for(let i=0;i<12;i++)pluck(2+i,{vol:.17,at:i*.04});gong({vol:.22,at:.5});let t=SFX.ctx.currentTime+.75;[[10,.45],[11,.45],[13,1.4]].forEach(([n,d])=>{flute(SCALE[n],t,d,.07,SFX.out);t+=d*.85})},
 };
-function sfx(n,a){if(!SFX.on||!SFX.ctx||SFX.ctx.state!=="running")return;try{SND[n](a)}catch(e){}}
+function sfx(n,a){if(!SFX.on||!SFX.ctx)return;SFX.last=performance.now();
+  if(SFX.ctx.state==="running"){try{SND[n](a)}catch(e){}return}
+  if(SFX.idle){SFX.idle=false;SFX.ctx.resume().then(()=>{try{SND[n](a)}catch(e){}}).catch(()=>{})}}
+/* tạm ngưng bộ âm thanh khi không có nhạc và không có tiếng nào trong 5 giây: bộ vang (reverb) không chạy ngầm tốn pin */
+setInterval(()=>{const c=SFX.ctx;if(c&&c.state==="running"&&!MUS.run&&performance.now()-(SFX.last||0)>5000){SFX.idle=true;c.suspend().catch(()=>{})}},2000);
 
 /* nhạc nền: đàn tranh rải hợp âm, sáo trúc, nền trầm, mõ và cồng; dồn trống khi có nhà sắp thắng */
 const BPM=68,ST=60/BPM/4;
@@ -3276,6 +3288,42 @@ document.addEventListener("submit",e=>{const f=e.target.closest(".chat-form");if
 /* ---------- Khởi động ---------- */
 $("#board").innerHTML=boardSVG();
 $("#legend").innerHTML=KNINFO.map((k,i)=>`<span><i style="color:${FAC[i].hex}">${FAC[i].han}</i>${k.n}</span>`).join("")+`<span><i style="color:var(--gold2)">經</i>Tây Thiên</span><button class="btn viewbtn" id="viewBtn" data-act="view" hidden>Chuyển sang 2D</button><button class="btn viewbtn" id="camBtn" data-act="cam" aria-pressed="true"></button>`;
+
+/* ---------- Tiết kiệm pin ----------
+   Mặc định bật trên điện thoại/máy tính bảng, và trên laptop khi đang chạy pin dưới 30%.
+   Khi bật: dừng hoạt ảnh trang trí, cảnh 3D đứng yên và chỉ vẽ lại khi có quân đi/hiệu ứng (tối đa 30 hình/giây),
+   giảm độ phân giải 3D và bóng đổ. Người chơi bấm nút thì nhớ lựa chọn đó. */
+const ECO={on:false,user:null};
+/* không ai chạm vào máy và ván không đổi trong 15 giây thì cảnh trang trí đứng yên; chạm lại là chạy tiếp */
+var IDLE={t:performance.now(),on:false};
+function poke(){if(!IDLE)return;IDLE.t=performance.now();if(IDLE.on){IDLE.on=false;document.body.classList.remove("calm");V3.dirty=true}}
+["pointerdown","pointermove","keydown","wheel","touchstart"].forEach(e=>addEventListener(e,poke,{passive:true}));
+setInterval(()=>{if(!IDLE.on&&performance.now()-IDLE.t>15000){IDLE.on=true;document.body.classList.add("calm")}},1000);
+const ecoHTML=()=>`<span class="ic" aria-hidden="true">省</span>Tiết kiệm pin: ${ECO.on?"Bật":"Tắt"}`;
+function setEco(on,user){
+  ECO.on=!!on;
+  if(user){ECO.user=ECO.on?"on":"off";try{localStorage.setItem(SAVE_KEY+"-eco",ECO.user)}catch(e){}toast(ECO.on?"Đã bật tiết kiệm pin: bớt hoạt ảnh trang trí, 3D nhẹ hơn.":"Đã tắt tiết kiệm pin: hiệu ứng đầy đủ.")}
+  document.body.classList.toggle("eco",ECO.on);
+  document.querySelectorAll('[data-act="eco"]').forEach(b=>{b.innerHTML=ecoHTML();b.setAttribute("aria-pressed",ECO.on?"true":"false")});
+  V3quality();
+}
+function V3quality(){
+  if(!V3.r)return;const r=V3.r,eco=ECO.on,dpr=window.devicePixelRatio||1;
+  r.setPixelRatio(Math.min(dpr,eco?1.25:(matchMedia("(pointer:coarse)").matches?1.5:2)));
+  if(V3.wrap&&V3.wrap.clientWidth)r.setSize(V3.wrap.clientWidth,V3.wrap.clientHeight,false);
+  const type=eco?THREE.PCFShadowMap:THREE.PCFSoftShadowMap,sz=eco?1024:2048;
+  if(r.shadowMap.type!==type)r.shadowMap.type=type;
+  if(V3.sun&&V3.sun.shadow.mapSize.x!==sz){V3.sun.shadow.mapSize.set(sz,sz);if(V3.sun.shadow.map){V3.sun.shadow.map.dispose();V3.sun.shadow.map=null}}
+  V3.dirty=true;
+}
+(function ecoInit(){
+  try{ECO.user=localStorage.getItem(SAVE_KEY+"-eco")}catch(e){}
+  const coarse=matchMedia("(pointer:coarse)").matches;
+  setEco(ECO.user?ECO.user==="on":coarse,false);
+  if(!ECO.user&&!coarse&&navigator.getBattery)navigator.getBattery().then(bt=>{
+    const chk=()=>{if(!ECO.user)setEco(!bt.charging&&bt.level<=.3,false)};chk();
+    bt.addEventListener("levelchange",chk);bt.addEventListener("chargingchange",chk)}).catch(()=>{});
+})();
 V3.ok=init3D();
 let pref3d="3d";try{pref3d=localStorage.getItem(SAVE_KEY+"-view")||"3d"}catch(e){}
 setView(V3.ok&&pref3d!=="2d");
