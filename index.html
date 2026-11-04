@@ -117,6 +117,10 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 @keyframes waveMove{to{transform:translateX(-4px)}}
 .cloud{animation:cloudMove 9s ease-in-out infinite alternate}
 .cloud:nth-of-type(2n){animation-duration:12s; animation-direction:alternate-reverse}
+.twk{animation:twk 2.4s ease-in-out infinite alternate}
+@keyframes twk{from{opacity:.25}to{opacity:1}}
+.tcrays{transform-box:view-box; transform-origin:30px 16px; animation:tcSway 14s ease-in-out infinite alternate}
+@keyframes tcSway{from{transform:rotate(-6deg);opacity:.55}to{transform:rotate(6deg);opacity:.95}}
 @keyframes cloudMove{to{transform:translateX(3.5px)}}
 .pv{fill:none; stroke:#f3d791; stroke-width:.7; stroke-dasharray:1.4 .9; animation:pvDash 1s linear infinite}
 .pv-fill{fill:#f3d791; opacity:.22}
@@ -433,7 +437,7 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 @keyframes gain{30%{box-shadow:0 0 0 2px #6fdc7a,0 0 28px rgba(111,220,122,.45)}}
 .turn.fresh{animation:turnIn .45s cubic-bezier(.2,1.2,.4,1)}
 @keyframes turnIn{from{opacity:.3;transform:translateX(14px)}}
-@media (prefers-reduced-motion:reduce){ .tok,.tok.fly{transition:none} .bring.on,.tok.can .tok-ring,.kn.flash,#die .die,.panel.gain,.turn.fresh,.board-wrap.shake,.knglow,.kglow,.rays,.flame,.halo,.talis,.wave,.cloud,.pv,.sheet,.mh-seals span{animation:none} .fxban,.fxhan{animation-duration:.01s} }
+@media (prefers-reduced-motion:reduce){ .tok,.tok.fly{transition:none} .bring.on,.tok.can .tok-ring,.kn.flash,#die .die,.panel.gain,.turn.fresh,.board-wrap.shake,.knglow,.kglow,.rays,.flame,.halo,.talis,.wave,.cloud,.twk,.tcrays,.pv,.sheet,.mh-seals span{animation:none} .fxban,.fxhan{animation-duration:.01s} }
 </style>
 
 <div class="app">
@@ -580,19 +584,69 @@ function scenery(f){
     <rect x="3" y="29" width="54" height="10" rx="3" fill="#5f7c57"/>
     <rect x="27.4" y="3.5" width="4.2" height="7.5" rx=".4" fill="#f2c94c" class="talis"/>
     <line x1="29.5" y1="4.6" x2="29.5" y2="10" stroke="#b3261e" stroke-width=".6"/>`;
+  return thienCung();
+}
+/* Thiên Cung: Lăng Tiêu Bảo Điện hai tầng mái, hai lầu Nam Thiên Môn, bậc bạch ngọc, mây ngũ sắc, Đông Hải bên dưới */
+function thienCung(){
+  const roof=(cx,y,w,h,lift)=>{const a=cx-w/2,b=cx+w/2,i=w*.16,l=lift||1.1;
+    return `<path d="M${a-l} ${y+h+.15} C${a+i*.35} ${y+h} ${a+i*.7} ${y+h*.45} ${a+i} ${y} L${b-i} ${y} C${b-i*.7} ${y+h*.45} ${b-i*.35} ${y+h} ${b+l} ${y+h+.15} C${b-i*.4} ${y+h+.05} ${b-i*.9} ${y+h-.1} ${b-i*1.1} ${y+h-.15} L${a+i*1.1} ${y+h-.15} C${a+i*.9} ${y+h-.1} ${a+i*.4} ${y+h+.05} ${a-l} ${y+h+.15}Z" fill="url(#tcRoof)" stroke="#7a4f12" stroke-width=".18"/>
+      <path d="M${a+i*.6} ${y+h-.15} L${b-i*.6} ${y+h-.15}" stroke="#5b1414" stroke-width=".35"/>
+      ${Array.from({length:Math.round((w-2*i)/1.3)},(_,k)=>{const x=a+i+(k+.5)*((w-2*i)/Math.round((w-2*i)/1.3));return `<line x1="${x.toFixed(2)}" y1="${y+.2}" x2="${x.toFixed(2)}" y2="${(y+h-.4).toFixed(2)}" stroke="#b9852c" stroke-width=".12" opacity=".8"/>`}).join("")}
+      <path d="M${a+i} ${y} L${b-i} ${y}" stroke="#fff3c4" stroke-width=".32"/>
+      <path d="M${a+i-.2} ${y+.1} c-.3 -.9 .5 -1.5 1 -1" fill="none" stroke="#f6d27a" stroke-width=".32" stroke-linecap="round"/>
+      <path d="M${b-i+.2} ${y+.1} c.3 -.9 -.5 -1.5 -1 -1" fill="none" stroke="#f6d27a" stroke-width=".32" stroke-linecap="round"/>
+      <circle cx="${a-l+.1}" cy="${y+h}" r=".28" fill="#ffe59a"/><circle cx="${b+l-.1}" cy="${y+h}" r=".28" fill="#ffe59a"/>`};
+  const cols=(x0,x1,y,h,n)=>Array.from({length:n},(_,k)=>{const x=x0+(x1-x0)*k/(n-1);return `<rect x="${(x-.38).toFixed(2)}" y="${y}" width=".76" height="${h}" fill="url(#tcCol)"/><rect x="${(x-.55).toFixed(2)}" y="${y}" width="1.1" height=".45" fill="#f6d27a"/>`}).join("");
+  const body=(x,y,w,h,n,door)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#5e1418"/>
+      ${Array.from({length:n-1},(_,k)=>{const cw=w/(n-1),xx=x+k*cw;return `<rect x="${(xx+cw*.18).toFixed(2)}" y="${y+h*.22}" width="${(cw*.64).toFixed(2)}" height="${(h*.5).toFixed(2)}" fill="#ffd77e" opacity="${door&&k===Math.floor((n-1)/2)?.95:.55}"/><path d="M${(xx+cw*.18).toFixed(2)} ${(y+h*.47).toFixed(2)} h${(cw*.64).toFixed(2)} M${(xx+cw*.5).toFixed(2)} ${y+h*.22} v${(h*.5).toFixed(2)}" stroke="#a8461e" stroke-width=".12"/>`}).join("")}
+      ${cols(x,x+w,y,h,n)}<rect x="${x-.3}" y="${y-.25}" width="${w+.6}" height=".55" fill="#2d6c8f"/><rect x="${x-.3}" y="${y+.3}" width="${w+.6}" height=".22" fill="#e3b65a"/>`;
+  const rail=(x0,x1,y)=>`<rect x="${x0}" y="${y}" width="${x1-x0}" height=".35" fill="#f4f7ff"/>${Array.from({length:Math.floor((x1-x0)/1.2)+1},(_,k)=>`<rect x="${(x0+k*1.2-.12).toFixed(2)}" y="${y-.55}" width=".24" height=".9" fill="#f4f7ff"/>`).join("")}`;
+  const cl=(x,y,s,o,c)=>`<g transform="translate(${x} ${y}) scale(${s})" opacity="${o}"><g class="cloud"><path d="M-7 1.6 C-8 -.4 -5.6 -1.8 -4 -.9 C-3.6 -3.2 -.4 -3.6 .6 -1.6 C1.6 -3.4 5 -3 5 -.8 C6.8 -1.2 8.2 .8 7 1.8 Z" fill="${c||"#f3f7ff"}"/><path d="M-4 -.9 C-3.4 .2 -2 .4 -1.4 -.4 M.6 -1.6 C1 -.3 2.4 0 3 -.9" fill="none" stroke="#9fb9df" stroke-width=".22" stroke-linecap="round"/><path d="M-7 1.6 H7" stroke="#c9d8f0" stroke-width=".3"/></g></g>`;
+  const tower=(cx)=>`<g>
+      <rect x="${cx-4.2}" y="22.3" width="8.4" height="2.2" fill="#e9eef8" stroke="#aebbd4" stroke-width=".15"/>${rail(cx-4.2,cx+4.2,22.3)}
+      ${body(cx-3,17.6,6,4.7,3,true)}
+      ${roof(cx,15.6,8,2.1,.9)}
+      ${body(cx-2,13.1,4,2.4,2)}
+      ${roof(cx,11.1,6,2,.8)}
+      <line x1="${cx}" y1="8.4" x2="${cx}" y2="11.1" stroke="#f6d27a" stroke-width=".35"/><circle cx="${cx}" cy="9.6" r=".55" fill="#ffe59a"/><circle cx="${cx}" cy="8.3" r=".35" fill="#fff6d6"/>
+      <path d="M${cx-3.8} 17.4 l-.5 1.9 M${cx+3.8} 17.4 l.5 1.9" stroke="#f6d27a" stroke-width=".18"/>
+      <circle cx="${cx-4.3}" cy="19.7" r=".45" fill="#ff8a5c" class="twk"/><circle cx="${cx+4.3}" cy="19.7" r=".45" fill="#ff8a5c" class="twk"/></g>`;
   return `
-    <rect width="60" height="60" fill="url(#g3)"/>
-    <circle cx="8" cy="6" r=".6" fill="#fff" opacity=".7"/><circle cx="51" cy="5" r=".5" fill="#fff" opacity=".6"/><circle cx="44" cy="14" r=".4" fill="#fff" opacity=".6"/><circle cx="13" cy="13" r=".4" fill="#fff" opacity=".5"/>
-    <rect x="22" y="12" width="16" height="8" fill="#a8302f"/>
-    <rect x="24" y="13.5" width="1.2" height="6.5" fill="#e8c66a"/><rect x="34.8" y="13.5" width="1.2" height="6.5" fill="#e8c66a"/>
-    <path d="M18.5 12.5 L41.5 12.5 L38 9 L22 9Z" fill="#e8c66a"/>
-    <rect x="26" y="6.5" width="8" height="2.8" fill="#a8302f"/>
-    <path d="M23.5 7 L36.5 7 L34.5 4.6 L25.5 4.6Z" fill="#e8c66a"/>
-    <ellipse cx="17" cy="21" rx="10" ry="3.4" fill="#dfe8f5" opacity=".9" class="cloud"/>
-    <ellipse cx="30" cy="22" rx="12" ry="3.8" fill="#eef3fa" class="cloud"/>
-    <ellipse cx="44" cy="21" rx="10" ry="3.2" fill="#dfe8f5" opacity=".9" class="cloud"/>
-    <path d="M0 28 Q5 25 10 28 T20 28 T30 28 T40 28 T50 28 T60 28 L60 60 L0 60Z" fill="#1f6fb8"/>
-    <path d="M0 32 Q5 29.5 10 32 T20 32 T30 32 T40 32 T50 32 T60 32" fill="none" stroke="#7fb6ea" stroke-width=".6" opacity=".8" class="wave"/>`;
+    <defs>
+      <linearGradient id="tcSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1238"/><stop offset=".45" stop-color="#1d3f86"/><stop offset=".75" stop-color="#4f86c9"/><stop offset="1" stop-color="#9cc6ee"/></linearGradient>
+      <radialGradient id="tcHalo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff4c8" stop-opacity=".95"/><stop offset=".35" stop-color="#ffd877" stop-opacity=".45"/><stop offset="1" stop-color="#ffd877" stop-opacity="0"/></radialGradient>
+      <linearGradient id="tcRoof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2b8"/><stop offset=".45" stop-color="#f0c454"/><stop offset="1" stop-color="#a8741e"/></linearGradient>
+      <linearGradient id="tcCol" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7a1414"/><stop offset=".45" stop-color="#d8402f"/><stop offset="1" stop-color="#7a1414"/></linearGradient>
+      <linearGradient id="tcJade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c8d4ea"/></linearGradient>
+      <linearGradient id="tcRay" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff0b8" stop-opacity=".55"/><stop offset="1" stop-color="#fff0b8" stop-opacity="0"/></linearGradient>
+      <linearGradient id="tcBow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a8a"/><stop offset=".25" stop-color="#ffd27a"/><stop offset=".5" stop-color="#b6f0a0"/><stop offset=".75" stop-color="#8fd0ff"/><stop offset="1" stop-color="#c7a4ff"/></linearGradient>
+      <linearGradient id="tcSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a86d0"/><stop offset="1" stop-color="#0b2d5e"/></linearGradient>
+    </defs>
+    <rect width="60" height="60" fill="url(#tcSky)"/>
+    ${[[4,9,.55],[9,4.5,.4],[55,10,.5],[51,4.5,.35],[15,12.5,.3],[46,13,.3],[2.5,15,.3],[57.5,15.5,.35]].map(([x,y,r],k)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" class="twk" style="animation-delay:${k*.37}s"/>`).join("")}
+    <path d="M-4 31 A34 25 0 0 1 64 31" fill="none" stroke="url(#tcBow)" stroke-width="2.2" opacity=".32"/>
+    <g class="tcrays" opacity=".8">${Array.from({length:13},(_,k)=>`<path d="M-.5 0 L.5 0 L2.6 -24 L-2.6 -24Z" fill="url(#tcRay)" transform="translate(30 16) rotate(${-78+k*13})"/>`).join("")}</g>
+    <circle cx="30" cy="15" r="17" fill="url(#tcHalo)" class="halo"/>
+    ${cl(7,12,.75,.75,"#dfe8fa")}${cl(53,12.5,.7,.75,"#dfe8fa")}
+    <path d="M14 22.8 Q30 19.6 46 22.8" fill="none" stroke="#e3b65a" stroke-width=".9"/><path d="M14 22.8 Q30 19.6 46 22.8" fill="none" stroke="#5e1418" stroke-width=".35"/>
+    ${tower(8.6)}${tower(51.4)}
+    <rect x="12.8" y="19.3" width="5" height="3" fill="#5e1418"/><rect x="42.2" y="19.3" width="5" height="3" fill="#5e1418"/>
+    ${cols(12.8,17.8,19.3,3,4)}${cols(42.2,47.2,19.3,3,4)}
+    <path d="M12.2 19.5 L18.4 19.5 L17.8 18.5 L12.8 18.5Z M41.6 19.5 L47.8 19.5 L47.2 18.5 L42.2 18.5Z" fill="url(#tcRoof)"/>
+    <rect x="14.5" y="24.6" width="31" height="2" fill="url(#tcJade)" stroke="#aebbd4" stroke-width=".15"/>${rail(14.5,45.5,24.6)}
+    <rect x="17.5" y="22.5" width="25" height="2.1" fill="url(#tcJade)" stroke="#aebbd4" stroke-width=".15"/>${rail(17.5,42.5,22.5)}
+    <path d="M26.4 22.5 L33.6 22.5 L35 26.6 L25 26.6Z" fill="#dfe6f4"/>${[23.3,24.1,24.9,25.7].map(y=>`<line x1="${25.6}" y1="${y}" x2="${34.4}" y2="${y}" stroke="#a9b7d2" stroke-width=".14"/>`).join("")}
+    <path d="M29.4 22.5 L30.6 22.5 L31 26.6 L29 26.6Z" fill="#f6d27a" opacity=".85"/>
+    ${body(20.2,16.6,19.6,5.9,7,true)}
+    ${roof(30,13.9,24.5,2.7,1.5)}
+    ${body(23.4,11.4,13.2,2.5,5)}
+    <rect x="27.4" y="11.6" width="5.2" height="1.6" rx=".25" fill="#1d3f86" stroke="#f6d27a" stroke-width=".2"/><text x="30" y="12.45" text-anchor="middle" dominant-baseline="middle" font-size="1.15" fill="#ffe59a" font-family="serif">凌霄殿</text>
+    ${roof(30,8.9,18.5,2.5,1.3)}
+    <path d="M27.6 8.9 Q30 6.9 32.4 8.9" fill="none" stroke="#f6d27a" stroke-width=".3"/>
+    <circle cx="30" cy="7.9" r=".75" fill="#fff6d6"/><circle cx="30" cy="7.9" r="1.3" fill="#ffe59a" opacity=".35" class="twk"/>
+    ${cl(4,27.6,1,.98)}${cl(17,28.6,1.15,1)}${cl(31,29.3,1.25,1)}${cl(45,28.4,1.1,1)}${cl(57,27.4,.95,.98)}
+    <path d="M0 31.5 Q5 29.8 10 31.5 T20 31.5 T30 31.5 T40 31.5 T50 31.5 T60 31.5 L60 60 L0 60Z" fill="url(#tcSea)"/>
+    <path d="M0 33.6 Q5 31.9 10 33.6 T20 33.6 T30 33.6 T40 33.6 T50 33.6 T60 33.6" fill="none" stroke="#9fd0f5" stroke-width=".5" opacity=".7" class="wave"/>`;
 }
 
 function cloudGlyph(x,y,s,col,op,w){
@@ -1903,9 +1957,36 @@ function baseProps(f){
     add(new THREE.CylinderGeometry(.3,.3,3,6),"#f0c454",[0,y+1,0])}
   if(f===2){add(new THREE.BoxGeometry(32,3,9),"#5f7c57",[0,1.5,1]);[[-12,6],[-6,9],[0,10.5],[6,9],[12.5,5.5]].forEach(([x,h])=>add(new THREE.CapsuleGeometry(2.4,h,4,10),"#86a37b",[x,3+h/2,0]));
     add(new THREE.BoxGeometry(2.6,4,.6),"#f2c94c",[0,16.5,1.6])}
-  if(f===3){add(new THREE.CylinderGeometry(14,14,.8,24),"#1f6fb8",[0,.4,0],[1,1,.55]);
-    for(const [x,s] of [[-8,4],[0,5],[8,4]])add(new THREE.SphereGeometry(s,14,10),"#eef3fa",[x,5,-1],[1.3,.55,.8]);
-    add(new THREE.BoxGeometry(11,4.5,6),"#a8302f",[0,8.5,-1]);add(new THREE.ConeGeometry(9,3.2,4),"#e8c66a",[0,12.3,-1],[1,1,.6],[0,Math.PI/4,0])}
+  if(f===3){
+    const GOLD="#f0c454",RED="#a8261f",JADE="#eef2fb",CLD="#f5f8ff";
+    /* mái cong: chóp 4 mặt dẹt + 4 đầu đao vểnh */
+    const roof=(x,y,z,w,d,h)=>{add(new THREE.ConeGeometry(.72,1,4,1).rotateY(Math.PI/4),GOLD,[x,y+h/2,z],[w*.98,h,d*.98]);
+      add(new THREE.BoxGeometry(w*1.02,.35,d*1.02),"#7a4f12",[x,y+.1,z]);
+      for(const [sx,sz] of [[-1,-1],[1,-1],[-1,1],[1,1]])add(new THREE.ConeGeometry(.32,1.5,5),GOLD,[x+sx*w*.5,y+.55,z+sz*d*.5],null,[sz*.75,0,-sx*.75])};
+    const hall=(x,y,z,w,h,d,n)=>{add(new THREE.BoxGeometry(w*.9,h,d*.85),RED,[x,y+h/2,z]);
+      add(new THREE.BoxGeometry(w*.5,h*.6,.2),"#ffd77e",[x,y+h*.45,z+d*.43]);
+      for(let k=0;k<n;k++){const cx=x-w/2+.4+(w-.8)*k/(n-1);for(const cz of [z+d/2-.3,z-d/2+.3])add(new THREE.CylinderGeometry(.28,.28,h,6),"#d8402f",[cx,y+h/2,cz])}};
+    /* mây nền + Đông Hải */
+    add(new THREE.CylinderGeometry(15,15,.6,28),"#1f6fb8",[0,.3,0],[1,1,.6]);
+    for(const [x,z,s] of [[-11,3,3.6],[-5,4.5,4.2],[2,4.8,4.6],[9,4,4],[13,1.5,3.2],[-13,-1,3],[0,-3.5,5],[-7,-3,4],[7,-3,4.2]])add(new THREE.SphereGeometry(s,14,10),CLD,[x,2.2,z],[1.35,.5,.9]);
+    /* bậc bạch ngọc */
+    add(new THREE.BoxGeometry(20,1.4,9),JADE,[0,3.6,-1.5]);add(new THREE.BoxGeometry(16,1.2,7),JADE,[0,4.9,-1.8]);
+    for(let k=0;k<4;k++)add(new THREE.BoxGeometry(3.4,.5,1.1),"#dfe6f4",[0,3.1+k*.55,3.4-k*.9]);
+    /* Lăng Tiêu Bảo Điện 2 tầng mái */
+    hall(0,5.5,-1.8,12,3.4,5.6,6);roof(0,8.9,-1.8,15,7.6,2.4);
+    hall(0,10.8,-1.8,8,2,4,4);roof(0,12.8,-1.8,10.5,5.4,2.2);
+    add(new THREE.SphereGeometry(.75,12,8),"#fff1b0",[0,15.6,-1.8]);
+    /* hai lầu Nam Thiên Môn */
+    for(const sx of [-1,1]){const x=sx*12.2;
+      add(new THREE.BoxGeometry(5,1.3,5),JADE,[x,3.5,-1]);
+      hall(x,4.15,-1,3.6,3,3.4,3);roof(x,7.15,-1,5.2,4.8,1.8);
+      hall(x,8.6,-1,2.4,1.6,2.4,2);roof(x,10.2,-1,3.6,3.4,1.6);
+      add(new THREE.CylinderGeometry(.12,.12,1.6,5),GOLD,[x,12.4,-1]);add(new THREE.SphereGeometry(.38,10,8),"#fff1b0",[x,13.2,-1]);
+      add(new THREE.BoxGeometry(4.4,2.6,1.4),RED,[sx*7.6,4.8,-1.5]);add(new THREE.BoxGeometry(4.8,.4,1.8),GOLD,[sx*7.6,6.3,-1.5])}
+    /* hào quang sau điện */
+    const halo=new THREE.Mesh(new THREE.CircleGeometry(11,40),new THREE.MeshBasicMaterial({color:"#ffe08a",transparent:true,opacity:.22,depthWrite:false,side:THREE.DoubleSide}));
+    halo.position.set(0,11,-6.5);g.add(halo);
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(9,.25,6,48),new THREE.MeshBasicMaterial({color:"#ffe9a8",transparent:true,opacity:.55}));ring.position.set(0,11,-6.3);g.add(ring)}
   return g;
 }
 V3.build=function(){
