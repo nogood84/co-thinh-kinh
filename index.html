@@ -226,6 +226,45 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 .cx span{font-size:12px; color:var(--muted)}
 .cx em{font-style:normal; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:color-mix(in srgb, var(--cc) 70%, white)}
 .toast{position:fixed; left:50%; bottom:calc(20px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); background:var(--lac3); border:1px solid var(--gold); padding:10px 16px; border-radius:10px; z-index:60; max-width:calc(100% - 32px)}
+/* trò chuyện & biểu cảm */
+.chat-list{list-style:none; margin:0 0 10px; padding:0; max-height:200px; overflow:auto; display:flex; flex-direction:column; gap:7px; overscroll-behavior:contain}
+#chatSheet .chat-list{max-height:min(38vh,320px)}
+.lobby-chat .chat-list{max-height:140px}
+.cmsg{display:flex; gap:8px; align-items:flex-start; font-size:13px; line-height:1.35}
+.cmsg .cchip{width:24px; height:24px; flex:none; border-radius:6px; display:grid; place-items:center; font-family:var(--f-han); font-size:14px; color:#fff8e8; background:var(--cc)}
+.cmsg .cbody{min-width:0; overflow-wrap:anywhere; background:rgba(255,255,255,.05); border:1px solid color-mix(in srgb,var(--cc) 35%,transparent); border-radius:9px; padding:5px 9px}
+.cmsg .cbody b{display:block; font-size:11.5px; color:color-mix(in srgb,var(--cc) 55%,#fff4dc)}
+.cmsg.mine .cbody{background:color-mix(in srgb,var(--cc) 16%,transparent)}
+.cemo{font-size:20px; vertical-align:-3px}
+.cmsg i{font-style:normal; color:#d9cfdc}
+.cempty{color:var(--muted); font-size:12.5px}
+.emo-wrap{margin-bottom:10px}
+.emo-wrap summary{cursor:pointer; color:#cdb98f; font-size:12px; letter-spacing:.1em; text-transform:uppercase; padding:4px 0; list-style:none}
+.emo-wrap summary::-webkit-details-marker{display:none}
+.emo-wrap summary::before{content:"▸ "; color:var(--gold)}
+.emo-wrap[open] summary::before{content:"▾ "}
+.emo-head{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--muted); margin:8px 0 6px}
+.emo-head span{width:18px; height:18px; border-radius:4px; display:grid; place-items:center; font-family:var(--f-han); font-size:11px; color:#fff8e8; background:var(--cc,#6a5f75)}
+.emo-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px}
+@media (min-width:520px){ #chatSheet .emo-grid,.lobby-chat .emo-grid{grid-template-columns:repeat(6,minmax(0,1fr))} }
+.emo{border:1px solid color-mix(in srgb,var(--cc) 45%,transparent); background:linear-gradient(170deg,color-mix(in srgb,var(--cc) 20%,#241b2e),#1d1626); border-radius:10px; padding:6px 4px 5px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; transition:transform .12s, box-shadow .15s; min-height:58px}
+.emo span{font-size:24px; line-height:1.1}
+.emo small{font-size:10px; color:#d9cfdc; text-align:center; line-height:1.15}
+.emo:hover{transform:translateY(-2px); box-shadow:0 0 12px color-mix(in srgb,var(--cc) 45%,transparent)}
+.emo:active{transform:scale(.94)}
+.chat-form{display:flex; gap:6px}
+.chat-form input{flex:1; min-width:0; background:var(--lac); border:1px solid var(--line); border-radius:8px; padding:9px 10px; color:var(--text); font:inherit; font-size:16px}
+.chat-fab{display:none}
+.stk{position:absolute; z-index:6; pointer-events:none; display:flex; align-items:center; gap:6px; max-width:62%; animation:stkIn .5s cubic-bezier(.2,1.6,.4,1) both}
+.stk.out{animation:stkOut .4s ease-in forwards}
+.stk.p-tl{left:4%; top:5%} .stk.p-tr{right:4%; top:5%; flex-direction:row-reverse} .stk.p-br{right:4%; bottom:7%; flex-direction:row-reverse} .stk.p-bl{left:4%; bottom:7%} .stk.p-tc{left:50%; top:4%; transform:translateX(-50%)}
+.stk-em{font-size:clamp(38px,8vw,58px); line-height:1; filter:drop-shadow(0 4px 10px rgba(0,0,0,.6)) drop-shadow(0 0 14px var(--cc))}
+.stk-cap{background:linear-gradient(170deg,color-mix(in srgb,var(--cc) 45%,#120c18),rgba(18,12,24,.94)); border:1px solid var(--cc); color:#fff4dc; border-radius:12px; padding:5px 10px; font-size:13px; line-height:1.3; box-shadow:0 6px 18px rgba(0,0,0,.5); overflow-wrap:anywhere}
+.stk-cap b{display:block; font-size:10.5px; letter-spacing:.06em; color:color-mix(in srgb,var(--cc) 40%,#fff4dc)}
+@keyframes stkIn{from{opacity:0; transform:translateY(16px) scale(.6)}}
+@keyframes stkOut{to{opacity:0; transform:translateY(-22px) scale(.9)}}
+.stk.p-tc{animation-name:none}
+@media (prefers-reduced-motion:reduce){ .stk,.stk.out{animation:none} .emo{transition:none} }
 /* điện thoại */
 .mmenu{display:none}
 #mbar{display:none}
@@ -266,6 +305,10 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
   .mb-hand.glow{border-color:var(--gold); box-shadow:0 0 14px rgba(243,215,145,.45)}
   .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
   .fxban{top:40%}
+  #chatPanel{display:none}
+  .chat-fab{display:grid; place-items:center; position:fixed; right:max(14px, env(safe-area-inset-right,0px)); bottom:calc(92px + env(safe-area-inset-bottom,0px)); z-index:31; width:52px; height:52px; border-radius:50%; border:1px solid var(--gold); background:radial-gradient(circle at 35% 30%,#3a2c46,#1d1626); box-shadow:0 6px 18px rgba(0,0,0,.5),0 0 14px rgba(214,171,82,.25); font-size:24px; cursor:pointer}
+  .chat-fab[hidden]{display:none}
+  .fab-badge{position:absolute; top:-4px; right:-4px; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:#d1432f; color:#fff; font:700 11px/20px var(--f-body); text-align:center}
   .menu-grid{grid-template-columns:1fr 1fr}
   .menu-grid .btn{min-height:46px; padding:10px; font-size:13px}
   .menu-grid .btn.primary{grid-column:1/-1}
@@ -380,10 +423,12 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
   </main>
 
   <div id="mbar" role="region" aria-label="Điều khiển lượt"></div>
+  <button id="chatFab" class="chat-fab" data-act="chat" hidden></button>
   <aside class="side">
     <section id="turn"></section>
     <section id="hand" class="panel"></section>
     <section id="players" class="panel"></section>
+    <section id="chatPanel" class="panel" hidden></section>
     <section class="panel"><h3>Nhật ký</h3><ol id="log"></ol></section>
   </aside>
 </div>
@@ -815,6 +860,7 @@ async function moveCore(pi,m){
       const xy=tokXY(o);CAM.focus(xy,{r:66,zoom:2.8,phi:1.08});
       FX.at("shock",xy,"#ff6a3a");FX.at("burst",xy,F.hex,{n:44});FX.shake();sfx("hit");setTimeout(()=>sfx("char",[P(pi).fac,m.ti,1]),180);
       FX.banner({han:F.han,kicker:"Đá quân",title:`${cname(o)} đá ${caps.map(cname).join(", ")}`,sub:"Quân bị đá bay về chuồng. Được rút 1 lá bài Phép.",color:F.hex});
+      botReact(pi,caps);
       caps.forEach(c=>{log(`${tl(o)} đá ${tl(c)} về chuồng!`);sendHome(c)});place();drawCard(pi);await sleep(700);
     }
   }
@@ -1010,7 +1056,7 @@ function place(){
   for(let f=0;f<4;f++){const r=document.getElementById("bring"+f);if(r)r.classList.toggle("on",!!G&&G.winner==null&&P(G.cur).fac===f)}
   netDirty();
 }
-function render(){place();renderTurn();renderHand();renderPlayers();renderLog()}
+function render(){place();renderTurn();renderHand();renderPlayers();renderLog();renderChatPanel()}
 let lastTurnShown=-1;
 function renderTurn(){
   const el=$("#turn");
@@ -1117,6 +1163,8 @@ document.addEventListener("click",e=>{
   const gl=e.target.closest("[data-gal]");
   if(gl){const [f,i]=gl.dataset.gal.split(",").map(Number);showGal(f,i);return}
   if(pick){const r=modalRes;modalRes=null;$("#modal").hidden=true;if(r)r(+pick.dataset.pick);return}
+  const em=e.target.closest("[data-emo]");
+  if(em){sendEmote(em.dataset.emo);if(em.closest("#chatSheet")&&!NET.code)closeSheet();return}
   const rc=e.target.closest("[data-rchoose]");
   if(rc){netIntent("choose",{i:+rc.dataset.rchoose});closeSheet();return}
   const card=e.target.closest("[data-card]");
@@ -1135,6 +1183,7 @@ document.addEventListener("click",e=>{
   else if(a==="music")toggleMusic();
   else if(a==="cam"){toggleCam();document.querySelectorAll("#sheet [data-act=cam]").forEach(x=>x.innerHTML=camHTML())}
   else if(a==="menu")openMenu();
+  else if(a==="chat")openChatSheet();
   else if(a==="hand")openHandSheet();
   else if(modalRes)return;
   else if(a==="setup")openSetup(NET.code?"online":"local");
@@ -2317,9 +2366,13 @@ async function netAfterJoin(){
 const INAPP=/Zalo|FBAN|FBAV|FB_IAB|Messenger|Instagram|Line\/|TikTok|musical_ly/i.test(navigator.userAgent);
 async function netEnter(name){
   try{KV().setItem("ctk-room",NET.code)}catch(e){}
-  NET.name=name;NET.status=null;NET.overShown=false;NET.choiceShown=-1;
+  NET.name=name;NET.status=null;NET.overShown=false;NET.choiceShown=-1;NET.presSig="";
+  Object.assign(CHAT,{log:[],seen:{},unread:0,primed:false});chatKey="";
   netOn(NET.be.db.ref(".info/connected"),"value",s=>{if(s.val()===true&&NET.code){const pr=R("presence/"+NET.uid);pr.onDisconnect().update({on:false,t:NET_TS()});pr.set({name:NET.name,on:true,t:NET_TS()})}});
-  netOn(R("presence"),"value",s=>{NET.pres=s.val()||{};netLobbyRefresh();if(G)renderPlayers();if(G&&NET.mode==="client")renderTurn()});
+  netOn(R("presence"),"value",s=>{NET.pres=s.val()||{};
+    const sig=JSON.stringify(Object.keys(NET.pres).sort().map(k=>[k,NET.pres[k].on!==false,NET.pres[k].name]));
+    if(sig!==NET.presSig){NET.presSig=sig;netLobbyRefresh();if(G)renderPlayers();if(G&&NET.mode==="client")renderTurn()}
+    chatIngest(NET.pres)});
   netOn(R("seats"),"value",s=>{NET.seats=s.val()||{};netLobbyRefresh()});
   const meta=(await R("meta").once("value")).val();
   NET.mode=meta.host===NET.uid?"host":"client";
@@ -2359,6 +2412,7 @@ async function netLeave(silent){
   NET.subs=[];clearInterval(NET.watch);clearTimeout(NET.timer);NET.timer=null;
   if(NET.mode==="client"){G=null;clearBoard();render()}
   Object.assign(NET,{mode:null,code:null,meta:null,seats:{},pres:{},status:null,myHand:[]});
+  Object.assign(CHAT,{log:[],seen:{},unread:0,primed:false});chatKey="";renderChatPanel();
   try{KV().removeItem("ctk-room")}catch(e){}
   if(!silent)toast("Đã rời phòng "+code+".");
 }
@@ -2384,13 +2438,14 @@ function lobbyHTML(){
     <p>Gửi mã hoặc link cho bạn bè. Họ mở link, nhập tên rồi chọn một giới còn trống.</p>
     <div class="row"><input id="roomLink" readonly value="${esc(roomLink())}" aria-label="Link phòng"><button class="btn" data-act="netCopy">Sao chép link</button>${share}</div>
     <h4>Bốn giới</h4>${seats}
+    <h4>Trò chuyện</h4><div class="lobby-chat">${chatBoxHTML("lobby")}</div>
     ${host?`<div class="row"><label for="netWin">Thắng khi về Kinh</label><select id="netWin">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===win?"selected":""}>${n} quân</option>`).join("")}</select></div>
       <p class="note">Ghế còn trống lúc bắt đầu sẽ do máy cầm quân.</p>
       <div class="opts foot"><button class="btn primary" data-act="netStart"><span class="ic" aria-hidden="true">新</span>Bắt đầu ván</button><button class="btn" data-act="netLeave">Đóng phòng</button></div>`
     :`<p class="note">${me!=null?"Đã ngồi vào ghế. Chờ chủ phòng bắt đầu…":"Chọn một ghế trống để vào chơi, hoặc chỉ ngồi xem."}</p><div class="opts foot"><button class="btn" data-act="netLeave">Rời phòng</button></div>`}</div>`;
 }
-function netLobby(){openSheet(lobbyHTML())}
-function netLobbyRefresh(){if($("#lobby")&&NET.code){const f=document.activeElement&&document.activeElement.id;$("#sheet").innerHTML=lobbyHTML();if(f&&$("#"+f))$("#"+f).focus()}}
+function netLobby(){openSheet(lobbyHTML());renderChatLists()}
+function netLobbyRefresh(){if($("#lobby")&&NET.code){const f=document.activeElement&&document.activeElement.id,v=$("#chatIn-lobby")?$("#chatIn-lobby").value:"";$("#sheet").innerHTML=lobbyHTML();if($("#chatIn-lobby"))$("#chatIn-lobby").value=v;renderChatLists();if(f&&$("#"+f))$("#"+f).focus()}}
 async function netSit(i){
   const name=NET.name||myName()||"Người chơi",old=seatOf(NET.uid);
   if(old!=null&&+old===+i)return;
@@ -2577,6 +2632,133 @@ function openWinSheet(){
     <div class="opts">${btn}<button class="btn" data-act="close">Xem lại bàn cờ</button></div>`);
 }
 function setupTab(t){document.querySelectorAll(".tab").forEach(b=>{const on=(b.dataset.act==="tabOnline")===(t==="online");b.classList.toggle("on",on);b.setAttribute("aria-selected",on?"true":"false")});const l=$("#paneLocal"),o=$("#paneOnline");if(l)l.hidden=t==="online";if(o)o.hidden=t!=="online"}
+
+/* ---------- Trò chuyện & biểu cảm ----------
+   Tin nhắn đi qua nhánh presence/{uid} sẵn có (mỗi người chỉ ghi được vào chỗ của mình), nên không cần đổi luật Firebase. */
+const EMO={
+  0:[["😈","Ha ha ha!"],["🔥","Lửa Tam Muội!"],["💀","Hù!"],["🌪️","Quạt cho bay!"],["🐂","Ngưu Ma gầm!"],["😏","Để xem…"]],
+  1:[["🙏","A Di Đà Phật"],["🌼","Thiện tai!"],["😌","Tâm tịnh"],["😆","Cười khà khà"],["✨","Phật độ!"],["📿","Niệm kinh"]],
+  2:[["🐒","Lão Tôn đây!"],["🍑","Đào tiên!"],["🐷","Đói bụng quá…"],["😭","Sư phụ ơi!"],["🐎","Đi tiếp!"],["🎲","Hên quá!"]],
+  3:[["⚡","Thiên lôi!"],["👑","Trẫm phán!"],["☁️","Cân đẩu vân"],["🐉","Rồng bay!"],["🌟","Sao trời"],["😎","Ngạo nghễ"]],
+  c:[["👍","Hay!"],["😮","Trời!"],["😅","Tiếc quá"],["⏰","Nhanh lên"],["🤝","GG"]]};
+const BOT_TAUNT={0:[0,1,4],1:[3,4,0],2:[0,5,4],3:[0,3,5]};
+const CHAT={log:[],seen:{},unread:0,lastSend:0,primed:false};
+const emoOf=id=>{const [g,i]=String(id).split(":");const set=EMO[g];return set&&set[+i]?{g,i:+i,em:set[+i][0],cap:set[+i][1]}:null};
+const rid=()=>Math.random().toString(36).slice(2,10);
+/* phe của người đang thao tác trên máy này */
+function myFac(){
+  if(NET.code){if(G){const s=mySeat();return s>=0?P(s).fac:-1}const k=seatOf(NET.uid);return k!=null?+k:-1}
+  return G?P(G.cur).fac:-1;
+}
+function facOfUid(uid){
+  if(G&&G.players){const p=G.players.find(x=>x.uid===uid&&x.type==="human");if(p)return p.fac}
+  const k=Object.keys(NET.seats||{}).find(i=>NET.seats[i]&&NET.seats[i].uid===uid);return k!=null?+k:-1;
+}
+function nameOfUid(uid,fallback){
+  if(G&&G.players){const p=G.players.find(x=>x.uid===uid&&x.type==="human");if(p)return p.name}
+  const k=facOfUid(uid);if(k>=0&&NET.seats[k]&&NET.seats[k].name)return NET.seats[k].name;
+  const pr=NET.pres[uid];return (pr&&pr.name)||fallback||"Khán giả";
+}
+/* gửi */
+function sendEmote(id){
+  const now=Date.now();if(now-CHAT.lastSend<700)return;
+  const f=myFac(),e=emoOf(id);if(!e||(e.g!=="c"&&+e.g!==f))return;CHAT.lastSend=now;
+  if(NET.code){const m={id:rid(),k:"e",e:id,t:now};R("presence/"+NET.uid+"/m").set(m).catch(()=>toast("Chưa gửi được, kiểm tra mạng."));chatShow(m,NET.uid)}
+  else chatShow({id:rid(),k:"e",e:id,t:now,as:G?G.cur:null},null);
+}
+function sendChat(text){
+  text=String(text||"").replace(/[\u0000-\u001f\u007f]/g," ").replace(/\s+/g," ").trim().slice(0,120);if(!text||!NET.code)return false;
+  const now=Date.now();if(now-CHAT.lastSend<900){toast("Gõ chậm lại một chút nhé.");return false}CHAT.lastSend=now;
+  const m={id:rid(),k:"t",x:text,t:now};R("presence/"+NET.uid+"/m").set(m).catch(()=>toast("Chưa gửi được, kiểm tra mạng."));chatShow(m,NET.uid);return true;
+}
+/* máy cầm quân cũng biết khích tướng */
+function botEmote(seat,id){
+  if(!G||!P(seat)||P(seat).type!=="bot"||!emoOf(id))return;
+  if(NET.mode==="host"){const m={id:rid(),k:"e",e:id,t:Date.now(),as:seat};R("presence/"+NET.uid+"/b").set(m);chatShow(m,NET.uid)}
+  else if(!NET.mode)chatShow({id:rid(),k:"e",e:id,t:Date.now(),as:seat},null);
+}
+function botReact(capturer,victims){
+  if(P(capturer).type==="bot"&&Math.random()<.6){const f=P(capturer).fac,l=BOT_TAUNT[f];setTimeout(()=>botEmote(capturer,f+":"+l[Math.floor(Math.random()*l.length)]),650)}
+  for(const v of victims)if(P(v.pi).type==="bot"&&Math.random()<.45){setTimeout(()=>botEmote(v.pi,Math.random()<.5?"c:2":P(v.pi).fac===2?"2:3":"c:1"),1500);break}
+}
+/* nhận: so sánh tin cuối của từng người trong presence */
+function chatIngest(pres){
+  const first=!CHAT.primed;CHAT.primed=true;
+  for(const uid of Object.keys(pres||{}))for(const key of ["m","b"]){
+    const m=pres[uid]&&pres[uid][key];if(!m||!m.id)continue;const sk=uid+"/"+key;
+    if(CHAT.seen[sk]===m.id)continue;CHAT.seen[sk]=m.id;
+    if(uid===NET.uid)continue;
+    if(key==="b"&&!(NET.meta&&NET.meta.host===uid))continue;
+    chatShow(m,uid,first);
+  }
+}
+function chatShow(m,uid,quiet){
+  let fac=-1,name="";
+  if(m.as!=null&&G&&P(m.as)){fac=P(m.as).fac;name=P(m.as).name}
+  else if(uid){fac=facOfUid(uid);name=nameOfUid(uid,"Khán giả")}
+  name=String(name).slice(0,24);
+  let e=null,text="";
+  if(m.k==="e"){e=emoOf(m.e);if(!e||(e.g!=="c"&&+e.g!==fac))return}
+  else if(m.k==="t"){text=String(m.x||"").slice(0,120);if(!text)return}else return;
+  const mine=uid&&uid===NET.uid&&m.as==null;
+  CHAT.log.push({fac,name,e,text,mine,t:m.t||Date.now()});if(CHAT.log.length>60)CHAT.log.shift();
+  renderChatLists();
+  if(quiet)return;
+  stickerShow(fac,name,e,text);
+  const snd=NET.raw?NET.raw.sfx:sfx;
+  if(e)snd("emote",fac);else snd("msg");
+  if(!mine&&isMobile()&&!$("#chatSheet")&&!$("#lobby")){CHAT.unread++;renderChatFab()}
+}
+/* hiển thị */
+const FAC_COL=f=>f>=0&&FAC[f]?FAC[f].hex:"#9a8fa6";
+function chatItemHTML(x){
+  const col=FAC_COL(x.fac),han=x.fac>=0?FAC[x.fac].han:"觀";
+  return `<li class="cmsg${x.mine?" mine":""}" style="--cc:${col}"><span class="cchip">${han}</span><span class="cbody"><b>${esc(x.name)}</b>${x.e?`<span class="cemo">${x.e.em}</span> <i>${esc(x.e.cap)}</i>`:esc(x.text)}</span></li>`;
+}
+function renderChatLists(){
+  const html=CHAT.log.length?CHAT.log.slice(-40).map(chatItemHTML).join(""):`<li class="cempty">${NET.code?"Chưa có tin nhắn. Gửi lời chào hay thả một biểu cảm nhé.":"Thả biểu cảm cho giới đang tới lượt."}</li>`;
+  document.querySelectorAll(".chat-list").forEach(l=>{const atEnd=l.scrollHeight-l.scrollTop-l.clientHeight<30;l.innerHTML=html;if(atEnd||l.dataset.init!=="1"){l.scrollTop=l.scrollHeight;l.dataset.init="1"}});
+}
+function emoPickerHTML(){
+  const f=myFac();
+  const btn=(g,i,[em,cap])=>`<button class="emo" data-emo="${g}:${i}" title="${esc(cap)}" aria-label="${esc(cap)}" style="--cc:${g==="c"?"#9a8fa6":FAC[g].hex}"><span>${em}</span><small>${esc(cap)}</small></button>`;
+  const own=f>=0?`<div class="emo-head" style="--cc:${FAC[f].hex}"><span>${FAC[f].han}</span>${FAC[f].world}</div><div class="emo-grid">${EMO[f].map((x,i)=>btn(f,i,x)).join("")}</div>`:`<p class="note">Ngồi vào một giới để có bộ biểu cảm riêng của giới đó.</p>`;
+  return own+`<div class="emo-head"><span>共</span>Chung</div><div class="emo-grid">${EMO.c.map((x,i)=>btn("c",i,x)).join("")}</div>`;
+}
+function chatBoxHTML(where){
+  const online=!!NET.code;
+  return `<ol class="chat-list" aria-live="polite"></ol>
+    <details class="emo-wrap" ${where==="sheet"?"open":""}><summary>Biểu cảm</summary><div class="emo-pick">${emoPickerHTML()}</div></details>
+    ${online?`<form class="chat-form" data-chat="${where}"><input id="chatIn-${where}" maxlength="120" autocomplete="off" placeholder="Nhắn cho cả phòng…" aria-label="Tin nhắn"><button class="btn primary" type="submit">Gửi</button></form>`:""}`;
+}
+let chatKey="";
+function renderChatPanel(){
+  const p=$("#chatPanel");if(!p)return;
+  const show=!!(G||NET.code);p.hidden=!show;if(!show)return;
+  const key=(NET.code?"o":"l")+"|"+myFac();
+  if(key!==chatKey||!p.querySelector(".chat-list")){const v=$("#chatIn-side")?$("#chatIn-side").value:"";const open=p.querySelector(".emo-wrap")?p.querySelector(".emo-wrap").open:true;
+    p.innerHTML=`<h3>${NET.code?"Trò chuyện":"Biểu cảm"}</h3>${chatBoxHTML("side")}`;chatKey=key;
+    const w=p.querySelector(".emo-wrap");if(w)w.open=open;if($("#chatIn-side"))$("#chatIn-side").value=v;renderChatLists()}
+  renderChatFab();
+}
+function renderChatFab(){
+  const b=$("#chatFab");if(!b)return;b.hidden=!(G||NET.code);
+  b.innerHTML=`<span aria-hidden="true">${NET.code?"💬":"😀"}</span>${CHAT.unread?`<b class="fab-badge">${CHAT.unread>9?"9+":CHAT.unread}</b>`:""}`;
+  b.setAttribute("aria-label",NET.code?"Trò chuyện"+(CHAT.unread?`, ${CHAT.unread} tin mới`:""):"Thả biểu cảm");
+}
+function openChatSheet(){CHAT.unread=0;renderChatFab();openSheet(`<div id="chatSheet"><h2>${NET.code?"Trò chuyện":"Biểu cảm"}</h2>${chatBoxHTML("sheet")}</div><div class="opts foot"><button class="btn" data-act="close">Đóng</button></div>`);renderChatLists()}
+/* biểu cảm bay lên ở góc chuồng của phe gửi */
+function stickerShow(fac,name,e,text){
+  const wrap=$(".board-wrap");if(!wrap)return;
+  const pos=["tl","tr","br","bl"][fac]||"tc";
+  const old=wrap.querySelector(".stk.p-"+pos);if(old)old.remove();
+  const d=document.createElement("div");d.className="stk p-"+pos+(e?" is-emo":" is-msg");d.style.setProperty("--cc",FAC_COL(fac));
+  d.innerHTML=e?`<span class="stk-em">${e.em}</span><span class="stk-cap"><b>${esc(name)}</b>${esc(e.cap)}</span>`:`<span class="stk-cap"><b>${esc(name)}</b>${esc(text.length>70?text.slice(0,68)+"…":text)}</span>`;
+  wrap.appendChild(d);setTimeout(()=>{d.classList.add("out");setTimeout(()=>d.remove(),400)},e?2600:4200);
+}
+SND.emote=f=>{const n=[[2,4,3],[5,7,9],[4,6,8],[8,10,12]][f]||[6,8,10];n.forEach((k,i)=>pluck(k,{vol:.16,at:i*.06}));tone(f===1?988:f===3?1568:f===0?330:740,.18,{type:"triangle",vol:.05,at:.12})};
+SND.msg=()=>{tone(1320,.07,{type:"triangle",vol:.05});tone(1760,.09,{type:"triangle",vol:.04,at:.06})};
+document.addEventListener("submit",e=>{const f=e.target.closest(".chat-form");if(!f)return;e.preventDefault();const i=f.querySelector("input");if(sendChat(i.value)){i.value="";i.focus()}});
 
 /* ---------- Khởi động ---------- */
 $("#board").innerHTML=boardSVG();
