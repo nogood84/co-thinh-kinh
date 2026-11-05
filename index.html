@@ -3128,7 +3128,8 @@ document.addEventListener("change",e=>{const s=e.target.closest("[data-seatsel]"
 /* cài app: dùng hộp cài của trình duyệt khi có, nếu không thì hướng dẫn theo từng loại máy */
 let installEvt=null;
 const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||matchMedia("(display-mode: fullscreen)").matches||navigator.standalone===true;
-function installBtnInit(){const b=$("#installBtn");if(!b)return;b.hidden=isStandalone()||location.protocol==="file:"||!document.querySelector('link[rel="manifest"]')}
+function installBtnInit(){const b=$("#installBtn");if(!b)return;b.hidden=isStandalone()||IN_APP||location.protocol==="file:"||!document.querySelector('link[rel="manifest"]')}
+const IN_APP=/CTKApp\//.test(navigator.userAgent);
 addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;installBtnInit()});
 addEventListener("appinstalled",()=>{installEvt=null;const b=$("#installBtn");if(b)b.hidden=true;toast("Đã cài Cờ Thỉnh Kinh lên máy.")});
 function installGuide(){
@@ -3143,6 +3144,7 @@ function installGuide(){
   else{who=edge?"Máy tính · Edge":"Máy tính · Chrome";steps=[`Bấm biểu tượng <b>cài đặt</b> (màn hình có mũi tên xuống) ở cuối thanh địa chỉ.`,`Hoặc mở menu <b>⋮</b> → <b>Truyền, lưu và chia sẻ</b> → <b>Cài đặt trang dưới dạng ứng dụng</b>.`,`Bấm <b>Cài đặt</b>.`]}
   openSheet(`<h2>Cài lên điện thoại</h2><p class="note">${who}</p><ol class="steps">${steps.map(s=>`<li>${s}</li>`).join("")}</ol>
     <p class="note">Sau khi cài, mở game từ biểu tượng ấn đỏ chữ 經 để chạy toàn màn hình. Game mở được cả khi không có mạng, trừ chế độ online.</p>
+    ${!ios&&location.protocol==="https:"?`<h4>Hoặc cài file APK (Android)</h4><p class="note">Tải file về điện thoại Android, mở file và cho phép cài từ nguồn này khi máy hỏi.</p><div class="opts"><a class="btn" href="CoThinhKinh.apk" download="CoThinhKinh.apk"><span class="ic" aria-hidden="true">新</span>Tải file APK cho Android</a></div>`:""}
     <div class="opts"><button class="btn primary" data-act="close">Đã hiểu</button></div>`);
 }
 async function doInstall(){
