@@ -112,6 +112,13 @@ Mỗi bản mới có `VERSION` khác trong `sw.js` nên điện thoại tự nh
 
 Dành cho kiểm tra: mở trang với đuôi `?net=local` (ví dụ `https://ten-site.netlify.app/?net=local`) ở nhiều tab của cùng một trình duyệt. Mỗi tab đóng vai một máy, nói chuyện với nhau ngay trong trình duyệt.
 
+## File APK cho Android
+
+- File `CoThinhKinh.apk` nằm cùng thư mục với trang game. Tải trực tiếp tại `https://nogood84.github.io/co-thinh-kinh/CoThinhKinh.apk`, hoặc bấm **Cài lên điện thoại** trong game rồi chọn **Tải file APK cho Android**.
+- Cài: mở file vừa tải, cho phép **Cài ứng dụng không rõ nguồn gốc** cho trình duyệt hoặc trình quản lý file khi máy hỏi, rồi bấm **Cài đặt**. Android 7 trở lên.
+- App mở bản game trên GitHub Pages, nên mỗi lần cập nhật web là app có bản mới, không cần cài lại APK. Lần đầu mở mà không có mạng, app dùng bản có sẵn bên trong để chơi trên một máy.
+- Khoá ký `cothinhkinh-release.p12` và mật khẩu được giữ riêng, không để trong thư mục này. Bản APK mới về sau phải ký bằng đúng khoá đó thì mới cài đè lên bản cũ được.
+
 ## Bước tiếp theo: CH Play và App Store
 
 Khi bản web chạy ổn, có thể bọc thành app thật bằng **Capacitor**:
