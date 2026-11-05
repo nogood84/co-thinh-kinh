@@ -99,11 +99,7 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 .legend span{display:inline-flex; align-items:center; gap:6px}
 .legend i{font-style:normal; font-family:var(--f-han); width:20px; height:20px; display:grid; place-items:center; border-radius:4px; background:var(--lac3); font-size:13px}
 
-/* tiết kiệm pin: dừng hoạt ảnh trang trí, giữ lại các tín hiệu cần thiết dưới dạng tĩnh */
-body.eco .knglow,body.eco .kglow,body.eco .rays,body.eco .flame,body.eco .halo,body.eco .talis,body.eco .wave,body.eco .cloud,body.eco .twk,body.eco .tcrays,body.eco .pv,body.eco .bdie .ring,body.eco .bdie.can .die,body.eco .mb-die.go .die,body.eco .mh-seals span{animation:none!important}
 body.calm .knglow,body.calm .kglow,body.calm .rays,body.calm .flame,body.calm .halo,body.calm .talis,body.calm .wave,body.calm .cloud,body.calm .twk,body.calm .tcrays,body.calm .bdie .ring,body.calm .bdie.can .die,body.calm .mb-die.go .die,body.calm .bring.on,body.calm .tok.can .tok-ring,body.calm .mh-seals span{animation-play-state:paused!important}
-body.eco .bring.on{animation:none; opacity:1; stroke-width:1.6}
-body.eco .tok.can .tok-ring{animation:none; stroke-width:1.1; opacity:1}
 /* board svg */
 .frame{fill:#1f1828; stroke:#e3b65a; stroke-width:.5}
 .knglow,.kglow,.halo,.flame,.talis{transform-box:fill-box}
@@ -2211,7 +2207,7 @@ function init3D(){
   const wrap=$(".board-wrap");
   let r;try{r=new THREE.WebGLRenderer({antialias:true})}catch(e){return false}
   if(!r||!r.getContext())return false;
-  r.shadowMap.enabled=true;
+  r.shadowMap.enabled=true;r.shadowMap.autoUpdate=false;
     const cv=r.domElement;cv.id="b3d";cv.hidden=true;cv.setAttribute("aria-label","Bàn cờ 3D, kéo để xoay, cuộn để phóng to");wrap.appendChild(cv);
   const tip=document.createElement("div");tip.className="tip";tip.hidden=true;wrap.appendChild(tip);
   const scene=new THREE.Scene();scene.background=new THREE.Color("#15101b");
@@ -2371,7 +2367,7 @@ function loop3D(t){
   camTick(dt);
   if(V3.on&&V3.r){
     V3.ctl.update();
-    const eco=ECO.on,still=eco||REDUCE.matches;let busy=false,amb=false;
+    const eco=ECO.on,still=REDUCE.matches;let busy=false,amb=false;
     if(V3.toks)for(const row of V3.toks)for(const o of row){const u=o.userData,dx=u.tx-o.position.x,dz=u.tz-o.position.z,d=Math.hypot(dx,dz),k=Math.min(1,dt*(u.fly?3.6:15));
       if(d>.02||Math.abs(u.ts-o.scale.x)>.002){busy=true;o.position.x+=dx*k;o.position.z+=dz*k;const ty=u.fly?Math.min(d*.7,30):Math.min(d*.45,5);o.position.y+=(ty-o.position.y)*Math.min(1,dt*(u.fly?7:40));o.scale.setScalar(o.scale.x+(u.ts-o.scale.x)*k);if(u.fly)o.children[0].rotation.y+=dt*13}
       else{if(u.fly){u.fly=false;o.children[0].rotation.y=0;o.position.y=0;busy=true;if(!REDUCE.matches)fx3Points(o.position.x,o.position.z,"#fff4dc",{n:16,spread:12,up:8,life:.5,size:2})}if(o.position.y){o.position.y=0;busy=true}}
@@ -2379,9 +2375,13 @@ function loop3D(t){
       if(u.can&&!still){busy=true;u.ring.material.opacity=.5+.45*Math.sin(t/170);fig.position.y=Math.abs(Math.sin(t/210+u.ti))*1.1}
       else{if(u.can&&u.ring.material.opacity!==.9){u.ring.material.opacity=.9;busy=true}if(fig.position.y){fig.position.y=0;busy=true}}}
     if(FX3.list.length){fx3Tick(dt);busy=true}
-    /* cảnh nền (mây, đèn lồng, hạt sáng): 30 hình/giây khi bàn đang động, 15 khi đứng yên; tiết kiệm pin thì đứng yên hẳn */
-    if(V3.env&&!still&&!IDLE.on&&t-(V3.envT||0)>(busy||V3.dirty?32:66)){const edt=Math.min(.12,(t-(V3.envT||t))/1000);V3.envT=t;for(const f of V3.env.upd)f(t,edt);amb=true}
-    if((busy||V3.dirty||amb)&&t-(V3.lastR||0)>=(eco?31:0)){V3.dirty=false;V3.lastR=t;V3.r.render(V3.scene,V3.cam)}
+    /* cảnh nền (mây, đèn lồng, hạt sáng) luôn chạy: 30 hình/giây, tiết kiệm pin thì 20 hình/giây.
+       Bóng đổ chỉ tính lại khi quân/camera chuyển động, còn lại vài lần mỗi giây — phần tốn GPU nhất mỗi khung hình. */
+    if(V3.env&&!still&&!IDLE.on&&t-(V3.envT||0)>(eco?48:32)){const edt=Math.min(.12,(t-(V3.envT||t))/1000);V3.envT=t;for(const f of V3.env.upd)f(t,edt);amb=true}
+    if((busy||V3.dirty||amb)&&t-(V3.lastR||0)>=(eco?31:0)){
+      const mov=busy||V3.dirty;
+      if(mov||t-(V3.lastSh||0)>(eco?320:110)){V3.r.shadowMap.needsUpdate=true;V3.lastSh=t}
+      V3.dirty=false;V3.lastR=t;V3.r.render(V3.scene,V3.cam)}
   }
   if(GAL.r)GAL.frame(t);
 }
@@ -3293,25 +3293,25 @@ $("#legend").innerHTML=KNINFO.map((k,i)=>`<span><i style="color:${FAC[i].hex}">$
 
 /* ---------- Tiết kiệm pin ----------
    Mặc định bật trên điện thoại/máy tính bảng, và trên laptop khi đang chạy pin dưới 30%.
-   Khi bật: dừng hoạt ảnh trang trí, cảnh 3D đứng yên và chỉ vẽ lại khi có quân đi/hiệu ứng (tối đa 30 hình/giây),
-   giảm độ phân giải 3D và bóng đổ. Người chơi bấm nút thì nhớ lựa chọn đó. */
+   Khi bật: giữ đủ hiệu ứng nhưng 3D vẽ tối đa 30 hình/giây (cảnh nền 20), độ phân giải và bóng đổ nhẹ hơn.
+   Người chơi bấm nút thì nhớ lựa chọn đó. */
 const ECO={on:false,user:null};
-/* không ai chạm vào máy và ván không đổi trong 15 giây thì cảnh trang trí đứng yên; chạm lại là chạy tiếp */
+/* để máy không ai chạm và ván không đổi suốt 2 phút (bỏ quên trên bàn) thì cảnh trang trí đứng yên; chạm lại là chạy tiếp */
 var IDLE={t:performance.now(),on:false};
 function poke(){if(!IDLE)return;IDLE.t=performance.now();if(IDLE.on){IDLE.on=false;document.body.classList.remove("calm");V3.dirty=true}}
 ["pointerdown","pointermove","keydown","wheel","touchstart"].forEach(e=>addEventListener(e,poke,{passive:true}));
-setInterval(()=>{if(!IDLE.on&&performance.now()-IDLE.t>15000){IDLE.on=true;document.body.classList.add("calm")}},1000);
+setInterval(()=>{if(!IDLE.on&&performance.now()-IDLE.t>120000){IDLE.on=true;document.body.classList.add("calm")}},1000);
 const ecoHTML=()=>`<span class="ic" aria-hidden="true">省</span>Tiết kiệm pin: ${ECO.on?"Bật":"Tắt"}`;
 function setEco(on,user){
   ECO.on=!!on;
-  if(user){ECO.user=ECO.on?"on":"off";try{localStorage.setItem(SAVE_KEY+"-eco",ECO.user)}catch(e){}toast(ECO.on?"Đã bật tiết kiệm pin: bớt hoạt ảnh trang trí, 3D nhẹ hơn.":"Đã tắt tiết kiệm pin: hiệu ứng đầy đủ.")}
+  if(user){ECO.user=ECO.on?"on":"off";try{localStorage.setItem(SAVE_KEY+"-eco",ECO.user)}catch(e){}toast(ECO.on?"Đã bật tiết kiệm pin: vẫn đủ hiệu ứng, 3D vẽ nhẹ hơn.":"Đã tắt tiết kiệm pin: 3D nét nhất.")}
   document.body.classList.toggle("eco",ECO.on);
   document.querySelectorAll('[data-act="eco"]').forEach(b=>{b.innerHTML=ecoHTML();b.setAttribute("aria-pressed",ECO.on?"true":"false")});
   V3quality();
 }
 function V3quality(){
   if(!V3.r)return;const r=V3.r,eco=ECO.on,dpr=window.devicePixelRatio||1;
-  r.setPixelRatio(Math.min(dpr,eco?1.25:(matchMedia("(pointer:coarse)").matches?1.5:2)));
+  r.setPixelRatio(Math.min(dpr,eco?1.5:2));
   if(V3.wrap&&V3.wrap.clientWidth)r.setSize(V3.wrap.clientWidth,V3.wrap.clientHeight,false);
   const type=eco?THREE.PCFShadowMap:THREE.PCFSoftShadowMap,sz=eco?1024:2048;
   if(r.shadowMap.type!==type)r.shadowMap.type=type;
