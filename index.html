@@ -102,6 +102,9 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 body.calm .knglow,body.calm .kglow,body.calm .rays,body.calm .flame,body.calm .halo,body.calm .talis,body.calm .wave,body.calm .cloud,body.calm .twk,body.calm .tcrays,body.calm .bdie .ring,body.calm .bdie.can .die,body.calm .mb-die.go .die,body.calm .bring.on,body.calm .tok.can .tok-ring,body.calm .mh-seals span{animation-play-state:paused!important}
 .lobby-mode{margin:6px 0 10px; padding:8px 12px; border-radius:10px; border:1px solid rgba(214,171,82,.45); background:rgba(214,171,82,.08); font-size:13.5px}
 .lobby-mode.adv{border-color:#7fc4ff; background:rgba(58,123,208,.16)}
+.updbar{position:fixed; left:50%; top:12px; transform:translateX(-50%); z-index:60; display:flex; gap:8px; align-items:center; max-width:min(560px,calc(100% - 24px)); padding:10px 12px; border-radius:12px; background:#2a1d34; border:1px solid #d6ab52; box-shadow:0 10px 30px rgba(0,0,0,.55); font-size:13.5px; line-height:1.4}
+.updbar span{flex:1}
+.updbar .btn{padding:7px 12px; flex:none}
 /* board svg */
 .frame{fill:#1f1828; stroke:#e3b65a; stroke-width:.5}
 .knglow,.kglow,.halo,.flame,.talis{transform-box:fill-box}
@@ -1625,6 +1628,8 @@ document.addEventListener("click",e=>{
   else if(a==="close")closeSheet();
   else if(a==="sound")toggleSound();
   else if(a==="eco")setEco(!ECO.on,true);
+  else if(a==="reloadApp")reloadApp();
+  else if(a==="updClose"){const u=$("#updBar");if(u)u.hidden=true}
   else if(a==="music")toggleMusic();
   else if(a==="cam"){toggleCam();document.querySelectorAll("#sheet [data-act=cam]").forEach(x=>x.innerHTML=camHTML())}
   else if(a==="menu")openMenu();
@@ -2868,7 +2873,7 @@ const isOnline=uid=>{const p=NET.pres[uid];return !!p&&p.on!==false};
 async function netCreate(name){
   NET.newMode=$("#netMode0")?$("#netMode0").value:savedMode();
   await netInit();NET.code=null;
-  for(let k=0;k<6&&!NET.code;k++){const code=netCode(),r=await NET.be.db.ref("rooms/"+code+"/meta").transaction(cur=>cur?undefined:{host:NET.uid,status:"lobby",win:3,mode:NET.newMode||"basic",created:Date.now()});if(r.committed)NET.code=code}
+  for(let k=0;k<6&&!NET.code;k++){const code=netCode(),r=await NET.be.db.ref("rooms/"+code+"/meta").transaction(cur=>cur?undefined:{host:NET.uid,status:"lobby",win:3,mode:NET.newMode||"basic",ver:APP_VER,created:Date.now()});if(r.committed)NET.code=code}
   if(!NET.code)throw new Error("Không tạo được mã phòng, thử lại.");
   await R("seats").set({0:{kind:"human",uid:NET.uid,name},1:{kind:"open"},2:{kind:"open"},3:{kind:"bot"}});
   await netEnter(name);
@@ -2895,9 +2900,9 @@ async function netEnter(name){
   try{KV().setItem("ctk-room",NET.code)}catch(e){}
   NET.name=name;NET.status=null;NET.overShown=false;NET.choiceShown=-1;NET.presSig="";
   Object.assign(CHAT,{log:[],seen:{},unread:0,primed:false});chatKey="";
-  netOn(NET.be.db.ref(".info/connected"),"value",s=>{if(s.val()===true&&NET.code){const pr=R("presence/"+NET.uid);pr.onDisconnect().update({on:false,t:NET_TS()});pr.set({name:NET.name,on:true,t:NET_TS()})}});
+  netOn(NET.be.db.ref(".info/connected"),"value",s=>{if(s.val()===true&&NET.code){const pr=R("presence/"+NET.uid);pr.onDisconnect().update({on:false,t:NET_TS()});pr.set({name:NET.name,on:true,t:NET_TS(),v:APP_VER})}});
   netOn(R("presence"),"value",s=>{NET.pres=s.val()||{};
-    const sig=JSON.stringify(Object.keys(NET.pres).sort().map(k=>[k,NET.pres[k].on!==false,NET.pres[k].name]));
+    const sig=JSON.stringify(Object.keys(NET.pres).sort().map(k=>[k,NET.pres[k].on!==false,NET.pres[k].name,NET.pres[k].v||""]));
     if(sig!==NET.presSig){NET.presSig=sig;netLobbyRefresh();if(G)renderPlayers();if(G&&NET.mode==="client")renderTurn()}
     chatIngest(NET.pres)});
   netOn(R("seats"),"value",s=>{NET.seats=s.val()||{};netLobbyRefresh()});
@@ -2916,7 +2921,7 @@ async function netEnter(name){
 }
 async function netOnMeta(m){
   if(!m){if(NET.code){toast("Phòng đã bị xoá.");netLeave(true)}return}
-  NET.meta=m;const prev=NET.status;NET.status=m.status;
+  NET.meta=m;const prev=NET.status;NET.status=m.status;verCheckRoom(m);
   if(m.status==="closed"&&NET.mode==="client"){toast("Chủ phòng đã đóng phòng.");netLeave(true);return}
   if(m.status==="lobby"){if(prev!=="lobby")netLobby();else netLobbyRefresh()}
   if(NET.mode==="host"&&m.status!=="lobby"&&prev==null){ /* chủ phòng tải lại trang giữa ván */
@@ -2951,7 +2956,7 @@ function lobbyHTML(){
   const host=NET.mode==="host",me=seatOf(NET.uid),win=(NET.meta&&NET.meta.win)||3,mode=(NET.meta&&NET.meta.mode)==='adv'?'adv':'basic';
   const seats=FAC.map((F,i)=>{const s=NET.seats[i]||{kind:"open"},mine=s.uid===NET.uid,on=s.uid&&isOnline(s.uid);
     let who,ctl="";
-    if(s.kind==="human"){who=`<b>${esc(s.name||"Người chơi")}</b>${mine?" (bạn)":""} <span class="ondot ${on?"on":""}" title="${on?"Đang kết nối":"Mất kết nối"}"></span>`;
+    if(s.kind==="human"){const pv=NET.pres[s.uid]&&NET.pres[s.uid].v,old=!!(pv&&NET.meta&&NET.meta.ver&&pv!==NET.meta.ver)||!!(s.uid&&NET.pres[s.uid]&&!pv);who=`<b>${esc(s.name||"Người chơi")}</b>${mine?" (bạn)":""} <span class="ondot ${on?"on":""}" title="${on?"Đang kết nối":"Mất kết nối"}"></span>${old?` <span class="badge off">Bản game cũ · cần tải lại</span>`:""}`;
       if(mine&&!host)ctl=`<button class="btn" data-act="netStand">Rời ghế</button>`;
       else if(host&&!mine)ctl=`<button class="btn" data-act="netSeatKind" data-i="${i}" data-k="open">Mời ra</button>`}
     else if(s.kind==="open"){who=`<span class="muted">Ghế trống, chờ người vào</span>`;ctl=`<button class="btn primary" data-act="netSit" data-i="${i}">Ngồi vào</button>`}
@@ -2992,7 +2997,7 @@ async function netStart(){
   if(list.length<2){toast("Cần ít nhất hai nhà.");return}
   const win=+($("#netWin")?$("#netWin").value:3),mode=$("#netMode")?$("#netMode").value:"basic";
   await R("intents").remove();await R("fx").remove();NET.fxKeys=[];NET.lastHands={};NET.autoTurn=-1;
-  await R("meta").update({status:"playing",win,mode});
+  await R("meta").update({status:"playing",win,mode,ver:APP_VER});
   closeSheet();newGame(list,win,mode);
 }
 function netAgain(){if(NET.mode!=="host")return;R("meta").update({status:"lobby"})}
@@ -3296,6 +3301,29 @@ document.addEventListener("submit",e=>{const f=e.target.closest(".chat-form");if
 $("#board").innerHTML=boardSVG();
 $("#legend").innerHTML=KNINFO.map((k,i)=>`<span><i style="color:${FAC[i].hex}">${FAC[i].han}</i>${k.n}</span>`).join("")+`<span><i style="color:var(--gold2)">經</i>Tây Thiên</span><button class="btn viewbtn" id="viewBtn" data-act="view" hidden>Chuyển sang 2D</button><button class="btn viewbtn" id="camBtn" data-act="cam" aria-pressed="true"></button>`;
 
+
+/* ---------- Phiên bản: mọi máy trong phòng phải chạy cùng một bản game ---------- */
+const APP_VER="ctk-202611050402";
+const verNum=v=>+(String(v||"").replace(/\D/g,"")||0);
+function reloadApp(){const go=()=>location.reload();if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration)navigator.serviceWorker.getRegistration().then(r=>r?r.update().catch(()=>{}):0).finally(()=>setTimeout(go,400));else go()}
+function showUpdate(msg,canReload){
+  let b=$("#updBar");if(!b){b=document.createElement("div");b.id="updBar";b.className="updbar";b.setAttribute("role","status");document.body.appendChild(b)}
+  b.innerHTML=`<span>${msg}</span>${canReload?`<button class="btn primary" data-act="reloadApp">Tải lại</button>`:""}<button class="btn" data-act="updClose" aria-label="Đóng">✕</button>`;b.hidden=false;
+}
+function verCheckRoom(m){
+  if(APP_VER==="dev"||!m||!m.ver||m.ver===APP_VER)return;
+  if(verNum(m.ver)>verNum(APP_VER))showUpdate("Phòng này dùng bản game mới hơn máy bạn (có bản Nâng cấp). Bấm Tải lại để cập nhật, game tự vào lại phòng.",true);
+  else if(NET.mode!=="host")showUpdate("Chủ phòng đang dùng bản game cũ hơn máy bạn. Nhờ chủ phòng đóng hẳn app hoặc tải lại trang để cập nhật.",false);
+}
+/* có bản mới trên máy chủ: chưa vào ván thì tự tải lại, đang chơi thì hiện nút để người chơi tự chọn lúc */
+if(navigator.serviceWorker&&APP_VER!=="dev"){
+  let reloading=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{if(reloading)return;
+    if(!G&&!NET.code){reloading=true;location.reload()}else showUpdate("Đã có bản game mới. Tải lại khi tiện để cập nhật.",true)});
+  const chk=()=>navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{});
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)chk()});
+  setInterval(chk,30*60*1000);
+}
 /* ---------- Tiết kiệm pin ----------
    Mặc định bật trên điện thoại/máy tính bảng, và trên laptop khi đang chạy pin dưới 30%.
    Khi bật: giữ đủ hiệu ứng nhưng 3D vẽ tối đa 30 hình/giây (cảnh nền 20), độ phân giải và bóng đổ nhẹ hơn.
