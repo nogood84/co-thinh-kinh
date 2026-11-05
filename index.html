@@ -100,6 +100,8 @@ h1{font-family:var(--f-disp); font-weight:400; font-size:clamp(28px,4.4vw,40px);
 .legend i{font-style:normal; font-family:var(--f-han); width:20px; height:20px; display:grid; place-items:center; border-radius:4px; background:var(--lac3); font-size:13px}
 
 body.calm .knglow,body.calm .kglow,body.calm .rays,body.calm .flame,body.calm .halo,body.calm .talis,body.calm .wave,body.calm .cloud,body.calm .twk,body.calm .tcrays,body.calm .bdie .ring,body.calm .bdie.can .die,body.calm .mb-die.go .die,body.calm .bring.on,body.calm .tok.can .tok-ring,body.calm .mh-seals span{animation-play-state:paused!important}
+.lobby-mode{margin:6px 0 10px; padding:8px 12px; border-radius:10px; border:1px solid rgba(214,171,82,.45); background:rgba(214,171,82,.08); font-size:13.5px}
+.lobby-mode.adv{border-color:#7fc4ff; background:rgba(58,123,208,.16)}
 /* board svg */
 .frame{fill:#1f1828; stroke:#e3b65a; stroke-width:.5}
 .knglow,.kglow,.halo,.flame,.talis{transform-box:fill-box}
@@ -2864,8 +2866,9 @@ const isOnline=uid=>{const p=NET.pres[uid];return !!p&&p.on!==false};
 
 /* tạo / vào / rời phòng */
 async function netCreate(name){
+  NET.newMode=$("#netMode0")?$("#netMode0").value:savedMode();
   await netInit();NET.code=null;
-  for(let k=0;k<6&&!NET.code;k++){const code=netCode(),r=await NET.be.db.ref("rooms/"+code+"/meta").transaction(cur=>cur?undefined:{host:NET.uid,status:"lobby",win:3,created:Date.now()});if(r.committed)NET.code=code}
+  for(let k=0;k<6&&!NET.code;k++){const code=netCode(),r=await NET.be.db.ref("rooms/"+code+"/meta").transaction(cur=>cur?undefined:{host:NET.uid,status:"lobby",win:3,mode:NET.newMode||"basic",created:Date.now()});if(r.committed)NET.code=code}
   if(!NET.code)throw new Error("Không tạo được mã phòng, thử lại.");
   await R("seats").set({0:{kind:"human",uid:NET.uid,name},1:{kind:"open"},2:{kind:"open"},3:{kind:"bot"}});
   await netEnter(name);
@@ -2919,7 +2922,7 @@ async function netOnMeta(m){
   if(NET.mode==="host"&&m.status!=="lobby"&&prev==null){ /* chủ phòng tải lại trang giữa ván */
     const s=(await R("host").once("value")).val();
     if(s){G=JSON.parse(s);Object.assign(G,{busy:false,select:null,choice:null});buildTokens();
-      if(G.winner==null){G.turnId++;G.phase="roll";G.dice=null;G.moves=[];G.cardUsed=false;log("Chủ phòng đã quay lại, ván tiếp tục.");render();
+      if(G.winner==null){G.turnId++;G.phase="roll";G.dice=null;G.moves=[];G.cardUsed=false;G.dv=null;G.du=[0,0];G.dbl=false;G.mode=G.mode||"basic";log("Chủ phòng đã quay lại, ván tiếp tục.");render();
         if(P(G.cur).type==="bot")botTurn(G.turnId);else camTurnView()}else render();closeSheet()}
   }
   if(m.status==="playing"&&$("#lobby"))closeSheet();
@@ -2959,6 +2962,7 @@ function lobbyHTML(){
   const share=navigator.share?`<button class="btn" data-act="netShare">Chia sẻ</button>`:"";
   return `<div id="lobby"><h2>Phòng chờ</h2>
     <div class="roomcode"><span>Mã phòng</span><b>${NET.code}</b></div>
+    <p class="lobby-mode ${mode}">Kiểu chơi: <b>${MODE_TXT[mode]}</b>${host?" · đổi ở cuối trang":""}</p>
     <p>Gửi mã hoặc link cho bạn bè. Họ mở link, nhập tên rồi chọn một giới còn trống.</p>
     <div class="row"><input id="roomLink" readonly value="${esc(roomLink())}" aria-label="Link phòng"><button class="btn" data-act="netCopy">Sao chép link</button>${share}</div>
     <h4>Bốn giới</h4>${seats}
@@ -2966,7 +2970,7 @@ function lobbyHTML(){
     ${host?`<div class="row"><label for="netMode">Kiểu chơi</label>${modeSelect("netMode",mode)}</div><div class="row"><label for="netWin">Thắng khi về Kinh</label><select id="netWin">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===win?"selected":""}>${n} quân</option>`).join("")}</select></div>
       <p class="note">Ghế còn trống lúc bắt đầu sẽ do máy cầm quân.</p>
       <div class="opts foot"><button class="btn primary" data-act="netStart"><span class="ic" aria-hidden="true">新</span>Bắt đầu ván</button><button class="btn" data-act="netLeave">Đóng phòng</button></div>`
-    :`<p class="note">Kiểu chơi: <b>${mode==='adv'?MODE_TXT.adv:MODE_TXT.basic}</b></p><p class="note">${me!=null?"Đã ngồi vào ghế. Chờ chủ phòng bắt đầu…":"Chọn một ghế trống để vào chơi, hoặc chỉ ngồi xem."}</p><div class="opts foot"><button class="btn" data-act="netLeave">Rời phòng</button></div>`}</div>`;
+    :`<p class="note">${me!=null?"Đã ngồi vào ghế. Chờ chủ phòng bắt đầu…":"Chọn một ghế trống để vào chơi, hoặc chỉ ngồi xem."}</p><div class="opts foot"><button class="btn" data-act="netLeave">Rời phòng</button></div>`}</div>`;
 }
 function netLobby(){openSheet(lobbyHTML());renderChatLists()}
 function netLobbyRefresh(){if($("#lobby")&&NET.code){const f=document.activeElement&&document.activeElement.id,v=$("#chatIn-lobby")?$("#chatIn-lobby").value:"";$("#sheet").innerHTML=lobbyHTML();if($("#chatIn-lobby"))$("#chatIn-lobby").value=v;renderChatLists();if(f&&$("#"+f))$("#"+f).focus()}}
@@ -3091,6 +3095,7 @@ function onlinePaneHTML(){
   if(NET.code)return `<p>Bạn đang ở phòng <b class="code-inline">${NET.code}</b>${NET.mode==="host"?" (chủ phòng)":""}.</p>
     <div class="opts"><button class="btn primary" data-act="netLobby">Mở phòng chờ</button><button class="btn" data-act="netLeave">${NET.mode==="host"?"Đóng phòng":"Rời phòng"}</button></div>`;
   return `${INAPP?`<p class="warn">Bạn đang mở game bên trong một ứng dụng (Zalo, Messenger…). Nếu bị kẹt, bấm nút <b>⋯</b> ở góc màn hình rồi chọn <b>Mở bằng trình duyệt</b>.</p>`:""}<div class="row"><label for="netName">Tên của bạn</label><input id="netName" maxlength="20" value="${esc(myName())}" placeholder="Ví dụ: Dũng"></div>
+    <div class="row"><label for="netMode0">Kiểu chơi</label>${modeSelect("netMode0",savedMode())}</div>
     <div class="opts"><button class="btn primary" data-act="netCreate"><span class="ic" aria-hidden="true">新</span>Tạo phòng mới</button></div>
     <h4>Vào phòng của bạn bè</h4>
     <div class="row"><input id="netCode" maxlength="5" placeholder="Mã phòng, ví dụ K7M2Q" value="${esc(pre)}" autocapitalize="characters" aria-label="Mã phòng"><button class="btn primary" data-act="netJoin">Vào phòng</button></div>
@@ -3123,7 +3128,7 @@ async function netAction(a,b){
     else if(a==="netShare"){try{await navigator.share({title:"Cờ Thỉnh Kinh",text:"Vào phòng "+NET.code+" chơi Cờ Thỉnh Kinh",url:roomLink()})}catch(e){}}
   }catch(e){const t=netErr(e);msg(t);if(!$("#netMsg"))toast(t);console.warn(e)}
 }
-document.addEventListener("change",e=>{const s=e.target.closest("[data-seatsel]");if(s&&NET.mode==="host")R("seats/"+s.dataset.seatsel).set({kind:s.value});if(e.target.id==="netWin"&&NET.mode==="host")R("meta").update({win:+e.target.value});if(e.target.id==="netMode"&&NET.mode==="host")R("meta").update({mode:e.target.value});if(e.target.id==="mode")try{localStorage.setItem(SAVE_KEY+"-mode",e.target.value)}catch(x){}});
+document.addEventListener("change",e=>{const s=e.target.closest("[data-seatsel]");if(s&&NET.mode==="host")R("seats/"+s.dataset.seatsel).set({kind:s.value});if(e.target.id==="netWin"&&NET.mode==="host")R("meta").update({win:+e.target.value});if(e.target.id==="netMode"&&NET.mode==="host")R("meta").update({mode:e.target.value});if(e.target.id==="mode"||e.target.id==="netMode0"||e.target.id==="netMode")try{localStorage.setItem(SAVE_KEY+"-mode",e.target.value)}catch(x){}});
 
 /* cài app: dùng hộp cài của trình duyệt khi có, nếu không thì hướng dẫn theo từng loại máy */
 let installEvt=null;

@@ -1,5 +1,5 @@
 /* Cờ Thỉnh Kinh — bộ nhớ đệm để chơi không cần mạng. Đổi VERSION mỗi lần cập nhật game. */
-const VERSION="ctk-202611050342";
+const VERSION="ctk-202611050352";
 const CORE=["./", "index.html", "manifest.webmanifest", "firebase-config.js", "vendor/three.min.js", "vendor/OrbitControls.js", "vendor/firebase-app-compat.js", "vendor/firebase-auth-compat.js", "vendor/firebase-database-compat.js", "icons/icon-192.png", "icons/icon-512.png", "icons/icon-maskable-512.png", "icons/apple-touch-icon.png", "icons/favicon-64.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION&&k!=="ctk-fonts").map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
